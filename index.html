@@ -5,6 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
     <script src="script.js" defer></script>
     <title>Tic Tac Toe</title>
 </head>
@@ -13,50 +16,62 @@
     <div class="home">
         <h2 class="chooseP">Choose players</h2>
         <div class="configure-players">
-            <div class="configure-player-one">
+            <div class="configure-player" id="player-one-data">
                 <label class="player-type">
                     <input type="checkbox">
                     <span class="type-human">Human</span>
                     <span class="type-ai">AI</span>
                 </label>
                 <div class="configure-human">
-                    <button class="choose-pic">Profile</button>
+                    <label>
+                        Choose avatar 
+                        <button class="choose-pic">Profile</button>
+                    </label>
                     <div class="name">
-                        <label for="name">Name</label>
-                        <input type="text" id="name">
+                        <label for="name-one">Name</label>
+                        <input type="text" id="name-one">
                     </div>
                 </div>
                 <div class="configure-ai">
-                    <select name="difficulty" id="">
-                        <option value="stupid">Stupid</option>
-                        <option value="easy">Easy</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="hard">Hard</option>
-                        <option value="impossible">Impossible</option>
-                    </select>
+                    <label>
+                        Difficulty
+                        <select name="difficulty">
+                            <option value="stupid">Stupid</option>
+                            <option value="easy">Easy</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="hard">Hard</option>
+                            <option value="impossible">Impossible</option>
+                        </select>
+                    </label>
                 </div>
             </div>
-            <div class="configure-player-two">
+            <div class="configure-player" id="player-two-data">
                 <label class="player-type">
                     <input type="checkbox">
                     <span class="type-human">Human</span>
                     <span class="type-ai">AI</span>
                 </label>
                 <div class="configure-human">
-                    <button class="choose-pic">Profile</button>
+                    <label>
+                        Choose avatar
+                        <button class="choose-pic">Profile</button>
+                    </label>
                     <div class="name">
-                        <label for="name">Name</label>
-                        <input type="text" id="name">
+                        <label for="name-two">Name</label>
+                        <input type="text" id="name-two">
                     </div>
                 </div>
                 <div class="configure-ai">
-                    <select name="difficulty" id="">
-                        <option value="stupid">Stupid</option>
-                        <option value="easy">Easy</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="hard">Hard</option>
-                        <option value="impossible">Impossible</option>
-                    </select>
+                    <label>
+                        Difficulty
+                        <select name="difficulty">
+                            <option value="stupid">Stupid</option>
+                            <option value="easy">Easy</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="hard">Hard</option>
+                            <option value="impossible">Impossible</option>
+                        </select>
+                    </label>
                 </div>
             </div>
         </div>

@@ -1,3 +1,15 @@
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 html, body {
     margin: 0%;
     padding: 0%;
@@ -10,6 +22,8 @@ body {
     place-content: center;
     justify-items: center;
     /* background-color: aqua; */
+
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .arena-body {
@@ -18,32 +32,76 @@ body {
 
 .home {
     display: grid;
+    justify-items: center;
+    gap: 1rem;
 
     /* background-color: antiquewhite; */
 }
 
 .configure-players {
+    width: min(100vw, 50rem);
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    justify-content: center;
+    justify-items: center;
+    gap: 1rem;
+
+    /* background-color: antiquewhite; */
+}
+.configure-player, .configure-human {
+    display: grid;
+    gap: 0.4rem;
+
+    /* background-color: antiquewhite; */
 }
 
 .player-type {
     user-select: none;
+    justify-self: center;
+    margin-bottom: 1rem;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* background-color: antiquewhite; */
+
+    --borderRadius: 0.5rem;
+    --onCol: black;
+    border-radius: var(--borderRadius);
+    outline: 0.2rem solid var(--onCol);
+    outline-offset: -0.1rem;
 }
 
 .player-type > input {
     display: none;
 }
 
+.type-human, .type-ai {
+    text-align: center;
+
+    padding: 0.4rem;
+}
+
 .type-human {
-    background-color: red;
+    border-radius: var(--borderRadius) 0rem 0rem var(--borderRadius);
+
+    background-color: var(--onCol);
+    color: white;
 }
 .type-human:not(.player-type>input:checked+span) {
-    background-color: aqua;
+    background-color: white;
+    color: black;
 }
 .type-ai {
-    background-color: aqua;
+    border-radius: 0rem var(--borderRadius) var(--borderRadius) 0rem;
+
+    background-color: white;
 }
 .type-ai:not(.player-type>input:checked~span) {
-    background-color: red;
+    background-color: var(--onCol);
+    color: white;
+}
+
+#roundNumInput {
+    width: 3ch;
+    text-align: center;
 }
