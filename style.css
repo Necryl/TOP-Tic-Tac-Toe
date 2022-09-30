@@ -1,3 +1,32 @@
+html, body {
+    margin: 0%;
+    padding: 0%;
+    height: 100vh;
+    width: 100vw;
+}
+
+body {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    /* background-color: aqua; */
+}
+
+.arena-body {
+    grid-template-rows: auto 1fr;
+}
+
+.home {
+    display: grid;
+
+    /* background-color: antiquewhite; */
+}
+
+.configure-players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
 .player-type {
     user-select: none;
 }
@@ -7,7 +36,7 @@
 }
 
 .type-human {
-    background-color: aliceblue;
+    background-color: red;
 }
 .type-human:not(.player-type>input:checked+span) {
     background-color: aqua;
@@ -16,5 +45,5 @@
     background-color: aqua;
 }
 .type-ai:not(.player-type>input:checked~span) {
-    background-color: aliceblue;
+    background-color: red;
 }
