@@ -1,0 +1,20 @@
+.player-type {
+    user-select: none;
+}
+
+.player-type > input {
+    display: none;
+}
+
+.type-human {
+    background-color: aliceblue;
+}
+.type-human:not(.player-type>input:checked+span) {
+    background-color: aqua;
+}
+.type-ai {
+    background-color: aqua;
+}
+.type-ai:not(.player-type>input:checked~span) {
+    background-color: aliceblue;
+}

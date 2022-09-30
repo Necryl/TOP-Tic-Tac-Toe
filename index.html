@@ -9,6 +9,77 @@
     <title>Tic Tac Toe</title>
 </head>
 <body>
-    
+    <h1 class="heading">Tic-Tac-Toe</h1>
+    <div class="home">
+        <h2 class="chooseP">Choose players</h2>
+        <div class="configure-players-wrapper">
+            <div class="configure-player-one">
+                <label class="player-type">
+                    <input type="checkbox">
+                    <span class="type-human">Human</span>
+                    <span class="type-ai">AI</span>
+                </label>
+                <div class="configure-human">
+                    <button class="choose-pic">Profile</button>
+                    <div class="name">
+                        <label for="name">Name</label>
+                        <input type="text" id="name">
+                    </div>
+                </div>
+                <div class="configure-ai">
+                    <select name="difficulty" id="">
+                        <option value="stupid">Stupid</option>
+                        <option value="easy">Easy</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Hard</option>
+                        <option value="impossible">Impossible</option>
+                    </select>
+                </div>
+            </div>
+            <div class="configure-player-two">
+                <label class="player-type">
+                    <input type="checkbox">
+                    <span class="type-human">Human</span>
+                    <span class="type-ai">AI</span>
+                </label>
+                <div class="configure-ai">
+                    <select name="difficulty" id="">
+                        <option value="stupid">Stupid</option>
+                        <option value="easy">Easy</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Hard</option>
+                        <option value="impossible">Impossible</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="roundNum">
+            <label for="roundNumInput">Number of rounds:</label>
+            <input type="number" id="roundNumInput">
+        </div>
+        <button>PLAY</button>
+    </div>
+    <div class="arena" style="display: none">
+        <div class="stats">
+            <div class="stats-one">
+                <img src="images/sampleProfilePic.png" alt="player one profile pic" class="profile-pic">
+                <h3 class="nameStat">Sample Name</h3>
+            </div>
+            <div class="stats-two">
+                <img src="images/sampleProfilePic.png" alt="player one profile pic" class="profile-pic">
+                <h3 class="nameStat">Sample Name</h3>
+            </div>
+        </div>
+        <div class="board">
+            <button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button>
+        </div>
+        <div class="arena-bar">
+            <button class="reset">RESET</button>
+            <button class="play-again">PLAY AGAIN</button>
+            <button class="menu">MENU</button>
+        </div>
+    </div>
+    <div class="pic-gallery" style="display: none">
+    </div>
 </body>
 </html>
