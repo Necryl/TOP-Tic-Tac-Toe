@@ -18,14 +18,14 @@
         <div class="configure-players">
             <div class="configure-player" id="player-one-data">
                 <label class="player-type">
-                    <input type="checkbox">
+                    <input type="checkbox" checked>
                     <span class="type-human">Human</span>
                     <span class="type-ai">AI</span>
                 </label>
                 <div class="configure-human">
                     <label>
                         Choose avatar 
-                        <button class="choose-pic">Profile</button>
+                        <button class="choose-pic" pic="profilePicM2.svg"><img src="images/profilePicM2.svg" alt="profile pic"></button>
                     </label>
                     <div class="name">
                         <label for="name-one">Name</label>
@@ -54,7 +54,7 @@
                 <div class="configure-human">
                     <label>
                         Choose avatar
-                        <button class="choose-pic">Profile</button>
+                        <button class="choose-pic" pic="default.png"><img src="images/profilePicM2.svg" alt="profile pic"></button>
                     </label>
                     <div class="name">
                         <label for="name-two">Name</label>
@@ -77,9 +77,9 @@
         </div>
         <div class="roundNum">
             <label for="roundNumInput">Number of rounds:</label>
-            <input type="number" id="roundNumInput">
+            <input type="number" id="roundNumInput" min="1" value="1">
         </div>
-        <button>PLAY</button>
+        <button class="playBtn">PLAY</button>
     </div>
     <div class="arena" style="display: none">
         <div class="stats">
@@ -96,12 +96,21 @@
             <button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button><button class="tile"></button>
         </div>
         <div class="arena-bar">
-            <button class="reset">RESET</button>
-            <button class="play-again">PLAY AGAIN</button>
-            <button class="menu">MENU</button>
+            <button class="resetBtn">RESET</button>
+            <button class="menuBtn">MENU</button>
         </div>
     </div>
-    <div class="pic-gallery" style="display: none">
+    <div class="pic-gallery-wrapper" style="display: none">
+        <div class="pic-gallery">
+            <h3>Choose your avatar</h3>
+            <button class="closeBtn"><img src="images/close.svg" alt="close icon"></button>
+        </div>
+    </div>
+    <div class="attribute">
+        <div class="attr-wrapper">
+            <a href="https://www.flaticon.com/free-icons/bot" title="bot icons" target="_blank">Bot icons created by Freepik - Flaticon</a>
+            <a href="https://www.vecteezy.com/free-vector/avatar" target="_blank">Avatar Vectors by Vecteezy</a>
+        </div>
     </div>
 </body>
 </html>

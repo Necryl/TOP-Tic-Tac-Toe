@@ -10,6 +10,11 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+:root, input, button, select {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 25px;
+}
+
 html, body {
     margin: 0%;
     padding: 0%;
@@ -19,37 +24,53 @@ html, body {
 
 body {
     display: grid;
-    place-content: center;
-    justify-items: center;
-    /* background-color: aqua; */
-
-    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.arena-body {
     grid-template-rows: auto 1fr;
+    
+    /* background-color:aquamarine; */
 }
 
-.home {
-    display: grid;
-    justify-items: center;
-    gap: 1rem;
+body > * {
+    overflow: auto;
+}
+
+.heading {
+    margin: 0.2em 0em;
+    margin-top: 0.5em;
+    justify-self: center;
+    font-size: max(1.75rem, 3vw);
 
     /* background-color: antiquewhite; */
 }
 
-.configure-players {
-    width: min(100vw, 50rem);
+.home {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    justify-content: center;
+    align-content: center;
     justify-items: center;
+    gap: 1rem;
+
+    margin-top: -10vh;
+    width: 100%;
+    align-self: center;
+
+    background-color: white;
+}
+
+.chooseP {
+    margin: 0%;
+}
+
+.configure-players {
+    width: min(90vw, 50rem);
+
+    display: grid;
+    grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
 
     /* background-color: antiquewhite; */
 }
 .configure-player, .configure-human {
     display: grid;
+    justify-content: center;
     gap: 0.4rem;
 
     /* background-color: antiquewhite; */
@@ -57,7 +78,7 @@ body {
 
 .player-type {
     user-select: none;
-    justify-self: center;
+    place-self: start center;
     margin-bottom: 1rem;
 
     display: grid;
@@ -101,7 +122,158 @@ body {
     color: white;
 }
 
+.configure-human > * {
+    display: grid;
+    grid-template-columns: auto auto;
+    width: max-content;
+    gap: 0.3rem;
+    align-items: center;
+}
+
+.choose-pic {
+    margin: 0%;
+    padding: 0%;
+    height: 2rem;
+    background-color: transparent;
+    border: none;
+}
+.choose-pic img {
+    height: 100%;
+}
+
 #roundNumInput {
     width: 3ch;
     text-align: center;
+}
+
+.attribute {
+    font-size: 0.6rem;
+    place-self: end;
+    display: grid;
+    place-items: end;
+    padding-right: 0.4rem;
+    position: relative;
+    overflow: visible;
+}
+.attribute:hover::before {
+    content: "";
+    height: 1rem;
+    width: 100%;
+    /* background-color: aqua; */
+    position: absolute;
+    place-self: start;
+    transform: translate(0rem, -0.9rem);
+}
+.attribute::after {
+    content: "Attribution for the avatars*";
+    color: rgba(0, 0, 0, 0.534);
+}
+.attribute:hover::after {
+    content: "Attribution for the avatars^";
+}
+.attr-wrapper {
+    display: none;
+    position: absolute;
+}
+.attribute:hover .attr-wrapper, .attr-wrapper:hover {
+    display: grid;
+    place-items: center;
+    transform: translate(-0.5rem, -1rem);
+}
+.attr-wrapper * {
+    background-color: rgb(231, 231, 231);
+    border-bottom: 0.1rem solid rgb(85, 85, 85);
+    width: 6rem;
+
+    color: black;
+
+    text-decoration: none;
+
+    padding: 0.4rem;
+
+    --borderRadius: 0.3rem;
+}
+.attr-wrapper *:hover {
+    background-color: rgb(192, 192, 192);
+}
+
+.attr-wrapper *:first-child {
+    border-radius: var(--borderRadius) var(--borderRadius) 0rem 0rem;
+}
+
+.attr-wrapper *:last-child {
+    border-radius: 0rem 0rem var(--borderRadius) var(--borderRadius);
+}
+
+.pic-gallery-wrapper {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    z-index: 1000;
+
+    display: grid;
+    place-content: center;
+}
+
+.pic-gallery {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-areas: "H H H";
+    place-items: center;
+    gap: 1rem;
+
+    height: fit-content;
+    width: fit-content;
+
+    background-color: white;
+    margin: 0%;
+    padding: 1rem;
+    outline: 0.15rem solid black;
+    border-radius: 1rem;
+}
+
+.pic-gallery h3 {
+    grid-area: H;
+
+    margin: 0%;
+    justify-self: start;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.closeBtn {
+    position: absolute;
+    margin: 0%;
+    padding: 0%;
+    display: grid;
+    place-content: center;
+    border: none;
+    background-color: transparent;
+    border-radius: 1rem;
+    padding: 0.3rem;
+    
+    top: 7px;
+    right: 7px;
+}
+.closeBtn img {
+    height: 1.3rem;
+}
+
+.pic-gallery>img {
+    object-fit: cover;
+    height: 4rem;
+    /* background-color: aqua; */
+
+    margin: 0%;
+    padding: 0%;
+    outline: 0.2rem solid transparent;
+    outline-offset: -0.1rem;
+    border-radius: 50%;
+}
+.pic-gallery>img:hover {
+    outline-color: rgb(180, 180, 180);
+}
+.pic-gallery>.selected-pic {
+    outline-color: grey;
 }
