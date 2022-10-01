@@ -277,3 +277,20 @@ body > * {
 .pic-gallery>.selected-pic {
     outline-color: grey;
 }
+
+.created-by {
+    position: fixed;
+    bottom: 0.5rem;
+    left: 0.5rem;
+}
+.created-by>* {
+    font-size: 0.8rem;
+    font-weight: 300;
+    margin: 0%;
+}
+.created-by a {
+    text-decoration: none;
+}
+.created-by a:hover {
+    text-decoration: underline;
+}
