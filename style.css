@@ -407,6 +407,8 @@ body {
     
     display: grid;
     place-items: center end;
+
+    /* background-color: aqua; */
 }
 
 .stats h3 {
@@ -441,27 +443,41 @@ body {
 /* Tiles */
 .tile[data-index='1'] {
     grid-area: A;
+    border-color: transparent black black transparent;
 } .tile[data-index='2'] {
     grid-area: B;
+    border-color: transparent black black black;
 } .tile[data-index='3'] {
     grid-area: C;
+    border-color: transparent transparent black black;
 } .tile[data-index='4'] {
     grid-area: D;
+    border-color: black black black transparent;
 } .tile[data-index='5'] {
     grid-area: E;
 } .tile[data-index='6'] {
     grid-area: F;
+    border-color: black transparent black black;
 } .tile[data-index='7'] {
     grid-area: G;
+    border-color: black black transparent transparent;
 } .tile[data-index='8'] {
     grid-area: H;
+    border-color: black black transparent black;
 } .tile[data-index='9'] {
     grid-area: I;
+    border-color: black transparent transparent black;
 }
 
-.tile::before {
-    content: attr(data-index);
+.tile {
+    border-radius: 0;
+    border: 0.1rem solid black;
+    background-color: transparent;
 }
+
+/* .tile::before {
+    content: attr(data-index);
+} */
 
 .arena-bar {
     /* border: 0.1rem solid black; */
