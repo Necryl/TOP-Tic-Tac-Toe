@@ -34,6 +34,7 @@ body {
     margin-top: 0.5em;
     justify-self: center;
     font-size: min(10vh, 1.7rem, 5vw);
+    font-weight: 400;    
 
     /* background-color: antiquewhite; */
 }
