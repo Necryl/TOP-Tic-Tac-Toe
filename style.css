@@ -473,10 +473,14 @@ body {
     border-radius: 0;
     border: 0.1rem solid black;
     background-color: transparent;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-family: 'Handlee', cursive;
+    color: black;
+    font-size: 3rem;
 }
 
 /* .tile::before {
-    content: attr(data-index);
+    content: "X";
 } */
 
 .arena-bar {
