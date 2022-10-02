@@ -204,7 +204,6 @@ body {
 .playBtn {
     grid-area: Play;
     justify-self: center;
-    margin-bottom: 0.7rem;
 }
 
 .pic-gallery-wrapper {
