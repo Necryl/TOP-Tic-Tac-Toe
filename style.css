@@ -24,56 +24,87 @@ html, body {
 
 body {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
     
     /* background-color:aquamarine; */
-}
-
-body > * {
-    overflow: auto;
 }
 
 .heading {
     margin: 0.2em 0em;
     margin-top: 0.5em;
     justify-self: center;
-    font-size: max(1.75rem, 3vw);
+    font-size: min(10vh, 1.7rem, 5vw);
 
     /* background-color: antiquewhite; */
 }
 
 .home {
+    position: relative;
+    margin-top: auto;
+    
     display: grid;
-    align-content: center;
-    justify-items: center;
+    grid-template-rows: 1fr auto auto auto auto 1fr;
+    grid-template-areas: "."
+                         "ChooseP"
+                         "Configure"
+                         "Rounds"
+                         "Play"
+                         ".";
     gap: 1rem;
 
-    margin-top: -10vh;
     width: 100%;
-    align-self: center;
+    height: 100%;
 
     background-color: white;
+
+    --inputGap: 0.2rem;
+
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .chooseP {
+    grid-area: ChooseP;
     margin: 0%;
+    justify-self: center;
+    font-size: 1.5rem;
+    font-weight: 300;
 }
 
 .configure-players {
-    width: min(90vw, 50rem);
+    width: min(80%, 50rem);
+    margin-left: auto;
+    margin-right: auto;
 
-    display: grid;
-    grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+    grid-area: Configure;
+
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
 
     /* background-color: antiquewhite; */
 }
+
+.configure-player {
+    /* border: 0.2rem solid black; */
+    display: grid;
+    flex: auto;
+    min-width: min(10rem, 100%);
+}
+
 .configure-player, .configure-human {
     display: grid;
-    justify-content: center;
     gap: 0.4rem;
 
     /* background-color: antiquewhite; */
+}
+
+.configure-human, .configure-ai {
+    justify-self: center;
+    width: min(450px, 100%);
+
+    /* background-color: aqua; */
 }
 
 .player-type {
@@ -122,12 +153,16 @@ body > * {
     color: white;
 }
 
-.configure-human > * {
-    display: grid;
-    grid-template-columns: auto auto;
-    width: max-content;
-    gap: 0.3rem;
+.configure-human > *, .configure-ai > * {
+    display: flex;
+    gap: var(--inputGap);
+    flex-wrap: wrap;
+    align-content: center;
     align-items: center;
+}
+
+.configure-human > label {
+    margin-right: auto;
 }
 
 .choose-pic {
@@ -136,9 +171,29 @@ body > * {
     height: 2rem;
     background-color: transparent;
     border: none;
+    /* background-color: aqua; */
 }
 .choose-pic img {
     height: 100%;
+}
+
+.name > input {
+    flex: auto;
+    width: 1rem;
+    max-width: 20ch;
+}
+
+.roundNum {
+    /* background-color: antiquewhite; */
+    grid-area: Rounds;
+    
+    margin: 0%;
+    width: 100vw;
+    
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 #roundNumInput {
@@ -146,63 +201,10 @@ body > * {
     text-align: center;
 }
 
-.attribute {
-    font-size: 0.6rem;
-    place-self: end;
-    display: grid;
-    place-items: end;
-    padding-right: 0.4rem;
-    position: relative;
-    overflow: visible;
-}
-.attribute:hover::before {
-    content: "";
-    height: 1rem;
-    width: 100%;
-    /* background-color: aqua; */
-    position: absolute;
-    place-self: start;
-    transform: translate(0rem, -0.9rem);
-}
-.attribute::after {
-    content: "Attribution for the avatars*";
-    color: rgba(0, 0, 0, 0.534);
-}
-.attribute:hover::after {
-    content: "Attribution for the avatars^";
-}
-.attr-wrapper {
-    display: none;
-    position: absolute;
-}
-.attribute:hover .attr-wrapper, .attr-wrapper:hover {
-    display: grid;
-    place-items: center;
-    transform: translate(-0.5rem, -1rem);
-}
-.attr-wrapper * {
-    background-color: rgb(231, 231, 231);
-    border-bottom: 0.1rem solid rgb(85, 85, 85);
-    width: 6rem;
-
-    color: black;
-
-    text-decoration: none;
-
-    padding: 0.4rem;
-
-    --borderRadius: 0.3rem;
-}
-.attr-wrapper *:hover {
-    background-color: rgb(192, 192, 192);
-}
-
-.attr-wrapper *:first-child {
-    border-radius: var(--borderRadius) var(--borderRadius) 0rem 0rem;
-}
-
-.attr-wrapper *:last-child {
-    border-radius: 0rem 0rem var(--borderRadius) var(--borderRadius);
+.playBtn {
+    grid-area: Play;
+    justify-self: center;
+    margin-bottom: 0.7rem;
 }
 
 .pic-gallery-wrapper {
@@ -278,19 +280,86 @@ body > * {
     outline-color: grey;
 }
 
-.created-by {
-    position: fixed;
-    bottom: 0.5rem;
-    left: 0.5rem;
+.footer {
+    background-color: grey;
+    color: white;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    font-size: min(4.5vw, 0.65rem);
+    padding: 0.2em;
 }
+
 .created-by>* {
-    font-size: 0.8rem;
+    font-size: inherit;
     font-weight: 300;
     margin: 0%;
 }
 .created-by a {
     text-decoration: none;
+    color: White;
+    font-weight: 400;
 }
 .created-by a:hover {
     text-decoration: underline;
+}
+
+.attribute, .attribute * {
+    z-index: 100000;
+}
+
+.attribute {
+    font-size: inherit;
+    align-self: end;
+    display: grid;
+    place-items: end;
+    position: relative;
+}
+.attribute:hover::before {
+    content: "";
+    height: 1rem;
+    width: 100%;
+    /* background-color: aqua; */
+    position: fixed;
+    place-self: start;
+    transform: translate(0rem, -0.9rem);
+}
+.attribute::after {
+    content: "Attribution for the avatars*";
+}
+.attribute:hover::after {
+    content: "Attribution for the avatars^";
+}
+.attr-wrapper {
+    display: none;
+    position: fixed;
+    transform: translate(-0.2rem, -2.3em);
+    place-items: center;
+}
+.attribute:hover .attr-wrapper, .attr-wrapper:hover {
+    display: grid;
+}
+.attr-wrapper * {
+    background-color: rgb(231, 231, 231);
+    border-bottom: 0.1rem solid rgb(85, 85, 85);
+    width: 6rem;
+
+    color: black;
+
+    text-decoration: none;
+
+    padding: 0.4rem;
+
+    --borderRadius: 0.3rem;
+}
+.attr-wrapper *:hover {
+    background-color: rgb(192, 192, 192);
+}
+
+.attr-wrapper *:first-child {
+    border-radius: var(--borderRadius) var(--borderRadius) 0rem 0rem;
+}
+
+.attr-wrapper *:last-child {
+    border-radius: 0rem 0rem var(--borderRadius) var(--borderRadius);
 }
