@@ -361,3 +361,114 @@ body {
 .attr-wrapper *:last-child {
     border-radius: 0rem 0rem var(--borderRadius) var(--borderRadius);
 }
+
+.arena {
+    /* background-color: antiquewhite; */
+    height: 100%;
+
+    display: grid;
+    grid-template-rows: auto 1fr 0.1fr;
+}
+
+.stats {
+    /* border: 0.1rem solid black; */
+
+    position: relative;
+
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "One . Two";
+}
+
+.stats-container {
+    position: absolute;
+    width: 95vw;
+
+    justify-self: center;
+
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "One . Two";
+}
+
+.stats-container>*{
+    gap: 0.2rem;
+}
+
+.stats-one {
+    grid-area: One;
+
+    display: grid;
+    place-items: center start;
+}
+
+.stats-two {
+    grid-area: Two;
+    
+    display: grid;
+    place-items: center end;
+}
+
+.stats h3 {
+    margin: 0%;
+
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.stats img {
+    height: min(17vw, 3rem);
+}
+
+.board {
+    /* border: 0.1rem solid black; */
+
+    margin-top: 5vh;
+
+    display: grid;
+    place-content: center;
+
+    grid-template-columns: repeat(3, var(--tileSize));
+    grid-template-rows: repeat(3, var(--tileSize));
+    grid-template-areas: "A B C"
+                         "D E F"
+                         "G H I";
+
+    --tileSize: 5rem;
+}
+
+
+/* Tiles */
+.tile[data-index='1'] {
+    grid-area: A;
+} .tile[data-index='2'] {
+    grid-area: B;
+} .tile[data-index='3'] {
+    grid-area: C;
+} .tile[data-index='4'] {
+    grid-area: D;
+} .tile[data-index='5'] {
+    grid-area: E;
+} .tile[data-index='6'] {
+    grid-area: F;
+} .tile[data-index='7'] {
+    grid-area: G;
+} .tile[data-index='8'] {
+    grid-area: H;
+} .tile[data-index='9'] {
+    grid-area: I;
+}
+
+.tile::before {
+    content: attr(data-index);
+}
+
+.arena-bar {
+    /* border: 0.1rem solid black; */
+
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: center;
+    align-content: start;
+    gap: 1rem;
+}
