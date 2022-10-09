@@ -185,22 +185,26 @@ function createElement(tag, attributes={}, text=undefined) {
     return result;
 }
 
-// engine functions
-function initialise() {
-    player1 = initiatePlayer(playerFormElements[0]);
-    player2 = initiatePlayer(playerFormElements[1]);
-
-    avatarPics.forEach(fileName => {
-        img = createElement('img', {src: `images/${fileName}`, pic: fileName})
-        img.addEventListener('click', event => {
-            players()[selectAvatar].elements.avatar.setAttribute('pic', fileName);
-            removeTextNodes(players()[selectAvatar].elements.avatar.childNodes)[0].setAttribute('src', `images/${fileName}`);
-            picGalleryWrapperElement.style.display = 'none'
+// engine
+let engine = (() => {
+    let initialise = () => {
+        player1 = initiatePlayer(playerFormElements[0]);
+        player2 = initiatePlayer(playerFormElements[1]);
+    
+        avatarPics.forEach(fileName => {
+            img = createElement('img', {src: `images/${fileName}`, pic: fileName})
+            img.addEventListener('click', event => {
+                players()[selectAvatar].elements.avatar.setAttribute('pic', fileName);
+                removeTextNodes(players()[selectAvatar].elements.avatar.childNodes)[0].setAttribute('src', `images/${fileName}`);
+                picGalleryWrapperElement.style.display = 'none'
+            })
+            picGalleryElement.appendChild(img);
         })
-        picGalleryElement.appendChild(img);
-    })
-    picGalleryImgElements = document.querySelectorAll('.pic-gallery > img');
-}
+        picGalleryImgElements = document.querySelectorAll('.pic-gallery > img');
+    }
+
+    return {initialise};
+})()
 
 // other functions
 function error (message) {
@@ -208,4 +212,4 @@ function error (message) {
 }
 
 // run on start
-initialise();
+engine.initialise();
