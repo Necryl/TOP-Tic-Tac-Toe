@@ -283,10 +283,15 @@ body {
     background-color: grey;
     color: white;
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "C . A";
     gap: 1rem;
     font-size: min(4.5vw, 0.65rem);
     padding: 0.2em;
+}
+
+.created-by {
+    grid-area: C;
 }
 
 .created-by>* {
@@ -308,6 +313,7 @@ body {
 }
 
 .attribute {
+    grid-area: A;
     font-size: inherit;
     align-self: end;
     display: grid;
