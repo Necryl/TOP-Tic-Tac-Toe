@@ -24,26 +24,7 @@ let numOfPlayers = 0;
 
 // events
 playBtnElement.addEventListener('click', event => {
-    player1 = createPlayer(player1);
-    player2 = createPlayer(player2);
-    problems = null;
-
-    players().forEach(player => {
-        if (player.name === '') {
-            error('Please fill in your name');
-            problems = 'oops';
-        }
-    })
-    if (problems === null) {
-        statNameElements.forEach((element, index) => {
-            element.textContent = players()[index].name;
-        })
-        statPicElements.forEach((element, index) => {
-            element.setAttribute('src', `images/${players()[index].avatar}`);
-        })
-        homeElement.style.display = 'none';
-        arenaElement.style.display = 'grid';
-    }
+    engine.play();
 })
 numOfRoundsInputElement.addEventListener('input', event => {
     if (event.target.value == 0) {
@@ -67,81 +48,6 @@ closeBtnElement.addEventListener('click', event => {
 
 
 // factory functions
-function initiatePlayer (playerFormElem) {
-    playerFormElem = removeTextNodes(playerFormElem.childNodes)
-
-    numOfPlayers++
-    let num = numOfPlayers;
-    
-    let humanFormElem = playerFormElem[1];
-    let aiFormElem = playerFormElem[2];
-
-    let playerTypeElem = removeTextNodes(playerFormElem[0].childNodes)[0];
-    let avatarElem = removeTextNodes(removeTextNodes(removeTextNodes(humanFormElem.childNodes))[0].childNodes)[0];
-    let nameElem = removeTextNodes(removeTextNodes(humanFormElem.childNodes)[1].childNodes)[1];
-    let difficultyElem = removeTextNodes(removeTextNodes(aiFormElem.childNodes)[0].childNodes)[0];
-
-    let toggleForm = (element) => {
-        if (element.checked) {
-            if (avatarElem.getAttribute('pic') === 'bot.png') {
-                avatarElem.setAttribute('pic', 'profilePicM2.svg');
-                removeTextNodes(avatarElem.childNodes)[0].setAttribute('src', 'images/profilePicM2.svg');
-            }
-            humanFormElem.style.display = 'grid';
-            aiFormElem.style.display = 'none';
-        } else {
-            humanFormElem.style.display = 'none';
-            aiFormElem.style.display = 'grid';
-        }
-    }
-
-    playerTypeElem.addEventListener('click', event => {
-        toggleForm(event.target);
-    })
-    toggleForm(playerTypeElem);
-
-    let chooseAvatar = (element) => {
-
-        picGalleryImgElements.forEach(img => {
-            if (img.getAttribute('pic') === element.getAttribute('pic')) {
-                img.classList.add('selected-pic');
-            } else {
-                img.classList.remove('selected-pic');
-            }
-        })
-        picGalleryWrapperElement.style.display = 'grid';
-    }
-    
-    avatarElem.addEventListener('click', event => {
-        selectAvatar = num-1;
-        chooseAvatar(avatarElem);
-    })
-    
-    return {
-        elements: {
-            type: playerTypeElem,
-            avatar: avatarElem,
-            name: nameElem,
-            difficulty: difficultyElem,
-        },
-    }
-}
-
-function createPlayer (player) {
-    let type = player.elements.type.checked ? 'Human':'AI';
-    let avatar = player.elements.avatar.getAttribute('pic');
-    let name = player.elements.name.value;
-    let difficulty = player.elements.difficulty.value;
-
-    if (type==='AI') {
-        name = randomBotName();
-        avatar = 'bot.png';
-        player.elements.avatar.setAttribute('pic', 'bot.png');
-        removeTextNodes(player.elements.avatar.childNodes)[0].setAttribute('src', 'images/bot.png');
-    }
-    
-    return {elements: player.elements, type, avatar, name, difficulty};
-}
 
 
 // tool functions
@@ -187,6 +93,86 @@ function createElement(tag, attributes={}, text=undefined) {
 
 // engine
 let engine = (() => {
+
+    // factory functions
+    function initiatePlayer (playerFormElem) {
+        playerFormElem = removeTextNodes(playerFormElem.childNodes)
+    
+        numOfPlayers++
+        let num = numOfPlayers;
+        
+        let humanFormElem = playerFormElem[1];
+        let aiFormElem = playerFormElem[2];
+    
+        let playerTypeElem = removeTextNodes(playerFormElem[0].childNodes)[0];
+        let avatarElem = removeTextNodes(removeTextNodes(removeTextNodes(humanFormElem.childNodes))[0].childNodes)[0];
+        let nameElem = removeTextNodes(removeTextNodes(humanFormElem.childNodes)[1].childNodes)[1];
+        let difficultyElem = removeTextNodes(removeTextNodes(aiFormElem.childNodes)[0].childNodes)[0];
+    
+        let toggleForm = (element) => {
+            if (element.checked) {
+                if (avatarElem.getAttribute('pic') === 'bot.png') {
+                    avatarElem.setAttribute('pic', 'profilePicM2.svg');
+                    removeTextNodes(avatarElem.childNodes)[0].setAttribute('src', 'images/profilePicM2.svg');
+                    nameElem.value = '';
+                }
+                humanFormElem.style.display = 'grid';
+                aiFormElem.style.display = 'none';
+            } else {
+                humanFormElem.style.display = 'none';
+                aiFormElem.style.display = 'grid';
+            }
+        }
+    
+        playerTypeElem.addEventListener('click', event => {
+            toggleForm(event.target);
+        })
+        toggleForm(playerTypeElem);
+    
+        let chooseAvatar = (element) => {
+    
+            picGalleryImgElements.forEach(img => {
+                if (img.getAttribute('pic') === element.getAttribute('pic')) {
+                    img.classList.add('selected-pic');
+                } else {
+                    img.classList.remove('selected-pic');
+                }
+            })
+            picGalleryWrapperElement.style.display = 'grid';
+        }
+        
+        avatarElem.addEventListener('click', event => {
+            selectAvatar = num-1;
+            chooseAvatar(avatarElem);
+        })
+        
+        return {
+            elements: {
+                type: playerTypeElem,
+                avatar: avatarElem,
+                name: nameElem,
+                difficulty: difficultyElem,
+            },
+        }
+    }
+    
+    function createPlayer (player) {
+        let type = player.elements.type.checked ? 'Human':'AI';
+        let avatar = player.elements.avatar.getAttribute('pic');
+        let name = player.elements.name.value;
+        let difficulty = player.elements.difficulty.value;
+    
+        if (type==='AI') {
+            name = randomBotName();
+            avatar = 'bot.png';
+            player.elements.avatar.setAttribute('pic', 'bot.png');
+            removeTextNodes(player.elements.avatar.childNodes)[0].setAttribute('src', 'images/bot.png');
+        }
+        
+        return {elements: player.elements, type, avatar, name, difficulty};
+    }
+    
+    // engine functions
     let initialise = () => {
         player1 = initiatePlayer(playerFormElements[0]);
         player2 = initiatePlayer(playerFormElements[1]);
@@ -203,7 +189,30 @@ let engine = (() => {
         picGalleryImgElements = document.querySelectorAll('.pic-gallery > img');
     }
 
-    return {initialise};
+    let play = () => {
+        player1 = createPlayer(player1);
+        player2 = createPlayer(player2);
+        problems = null;
+
+        players().forEach(player => {
+            if (player.name === '') {
+                error('Please fill in your name');
+                problems = 'oops';
+            }
+        })
+        if (problems === null) {
+            statNameElements.forEach((element, index) => {
+                element.textContent = players()[index].name;
+            })
+            statPicElements.forEach((element, index) => {
+                element.setAttribute('src', `images/${players()[index].avatar}`);
+            })
+            homeElement.style.display = 'none';
+            arenaElement.style.display = 'grid';
+        }
+    }
+
+    return {initialise, play};
 })()
 
 // other functions
