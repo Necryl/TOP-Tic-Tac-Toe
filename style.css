@@ -388,6 +388,10 @@ body {
 }
 
 .stats-container {
+    /* background-color: antiquewhite; */
+
+    pointer-events: none;
+
     position: absolute;
     width: 95vw;
 
