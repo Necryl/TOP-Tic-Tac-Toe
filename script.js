@@ -6,11 +6,22 @@ const homeElement = document.querySelector('.home');
 const arenaElement = document.querySelector('.arena');
 const statNameElements = document.querySelectorAll('.stats h3');
 const statPicElements = document.querySelectorAll('.stats img');
+const resetBtnElement = document.querySelector('.resetBtn');
 const menuBtnElement = document.querySelector('.menuBtn');
 const picGalleryWrapperElement = document.querySelector('.pic-gallery-wrapper');
 const picGalleryElement = document.querySelector('.pic-gallery');
 let picGalleryImgElements;
 const closeBtnElement = document.querySelector('.closeBtn');
+// capture tiles
+const tileElements = (() => {
+    let result = [];
+
+    document.querySelectorAll('.tile').forEach((tile) => {
+        result[tile.getAttribute('data-index')-1] = tile;
+    });
+
+    return result;
+})()
 
 
 // variables
@@ -38,12 +49,15 @@ numOfRoundsInputElement.addEventListener('focusout', event => {
         event.target.value = 1;
     }
 })
+closeBtnElement.addEventListener('click', event => {
+    picGalleryWrapperElement.style.display = 'none';
+})
 menuBtnElement.addEventListener('click', event => {
     homeElement.style.display = 'grid';
     arenaElement.style.display = 'none';
 });
-closeBtnElement.addEventListener('click', event => {
-    picGalleryWrapperElement.style.display = 'none';
+resetBtnElement.addEventListener('click', event => {
+    engine.game.round.start();
 })
 
 
@@ -172,6 +186,57 @@ let engine = (() => {
         return {elements: player.elements, type, avatar, name, difficulty};
     }
     
+    // game module
+    let game = (() => {
+
+        let tileAvailable = false;
+
+        let round = (() => {
+            let start = () => {
+                console.log('This is round.start');
+
+                tileElements.forEach(tile => {
+                    tile.textContent = 'O';
+                });
+
+                tileAvailable = true;
+            };
+
+            let validateChoice = () => {
+                console.log('This is round.validateChoice');
+            };
+
+            let updateCell = () => {
+                console.log('This is round.updateCell');
+            };
+
+            let checkForWin = () => {
+                console.log('This is round.checkForWin');
+            };
+
+            let processChoice = () => {
+                console.log('This is round.processChoice');
+            };
+
+            let end = () => {
+                console.log('This is round.end');
+            };
+
+            return {start, processChoice}
+        })()
+
+        let start = () => {
+            console.log('This is game.start');
+            round.start();
+        };
+
+        let end = () => {
+            console.log('This is game.end');
+        };
+        
+        return {round, start,};
+    })()
+
     // engine functions
     let initialise = () => {
         player1 = initiatePlayer(playerFormElements[0]);
@@ -187,6 +252,12 @@ let engine = (() => {
             picGalleryElement.appendChild(img);
         })
         picGalleryImgElements = document.querySelectorAll('.pic-gallery > img');
+
+        tileElements.forEach(tile => {
+            tile.addEventListener('click', event => {
+                console.log(`Tile ${event.target.getAttribute('data-index')} was clicked`);
+            });
+        })
     }
 
     let play = () => {
@@ -207,12 +278,13 @@ let engine = (() => {
             statPicElements.forEach((element, index) => {
                 element.setAttribute('src', `images/${players()[index].avatar}`);
             })
+            game.start();
             homeElement.style.display = 'none';
             arenaElement.style.display = 'grid';
         }
     }
 
-    return {initialise, play};
+    return {game, initialise, play};
 })()
 
 // other functions
