@@ -209,11 +209,12 @@ let engine = (() => {
     let game = (() => {
 
         let tileAccess = [false];
-
-        let roundCounter = [0, 0];
+        let roundCounter;
 
         let roundOver = (won=false) => {
+            console.log('round over!');
             roundCounter[0]++;
+            console.log(roundCounter[0], roundCounter[1]);
             // declare winner or draw
             if (roundCounter[0] < roundCounter[1]) {
                 // update round number and then
@@ -222,6 +223,13 @@ let engine = (() => {
                 end();
             }
         }
+
+        let resetGameVars = () => {
+            tileAccess[0] = false;
+            roundCounter = [0, 0];
+            roundCounter[1] = Number(numOfRoundsInputElement.value);
+        }
+        resetGameVars();
         
         let board = (() => {
             let tiles;
@@ -258,13 +266,12 @@ let engine = (() => {
         })()
 
         let round = ((tileAccess, roundOver, board) => {
-            let player = 0;
+            let player;
 
             let start = () => {
                 console.log('This is round.start');
-                
                 board.reset();
-                
+                player = 0;
                 tileAccess[0] = true;
             };
 
@@ -335,7 +342,7 @@ let engine = (() => {
 
         let start = () => {
             console.log('This is game.start');
-            roundCounter[1] = Number(numOfRoundsInputElement.value);
+            resetGameVars();
             round.start();
         };
 
@@ -373,6 +380,8 @@ let engine = (() => {
             tile.addEventListener('click', event => {
                 if (game.tileAvailable) {
                     game.round.processChoice(event.target.getAttribute('data-index'));
+                } else {
+                    console.log('Tile not available');
                 }
             });
         })
