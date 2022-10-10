@@ -211,7 +211,7 @@ let engine = (() => {
         let tileAccess = [false];
         let roundCounter;
 
-        let roundOver = (won=false) => {
+        let roundOver = (result) => {
             console.log('round over!');
             roundCounter[0]++;
             console.log(roundCounter[0], roundCounter[1]);
@@ -324,12 +324,12 @@ let engine = (() => {
                 tileAccess[0] = false;
                 if (validateChoice(cellNum)) {
                     board.setCell(cellNum, player);
-                    let won = checkForWin();
-                    if (won !== false) {
-                        roundOver(won);
-                    } else {
+                    let gameOver = checkForWin();
+                    if (gameOver === false) {
                         switchPlayer();
                         tileAccess[0] = true;
+                    } else {
+                        roundOver(gameOver);
                     }
                 } else {tileAccess[0] = true}
             };
