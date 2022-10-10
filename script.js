@@ -105,6 +105,25 @@ function createElement(tag, attributes={}, text=undefined) {
     return result;
 }
 
+function compareThreeAsEqual(item1, item2, item3) {
+    if (item1 === item2 && item2 === item3) {
+        if (item1 === null) {
+            return false;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function getArrayItems(source) {
+    let result = [];
+    for (let i = 1; i < arguments.length; i++) {
+        result.push(source[arguments[i]]);
+    }
+    return result;
+}
+
 // engine
 let engine = (() => {
 
@@ -226,14 +245,21 @@ let engine = (() => {
                 return tiles[cell-1];
             }
 
+            let getTiles = () => {
+                return tiles.slice(0);
+            }
+
             return {
                 reset,
                 setCell,
                 getCell,
+                getTiles,
             };
         })()
 
         let round = ((tileAccess, roundOver, board) => {
+            let player = 0;
+
             let start = () => {
                 console.log('This is round.start');
                 
@@ -241,6 +267,14 @@ let engine = (() => {
                 
                 tileAccess[0] = true;
             };
+
+            let switchPlayer = () => {
+                if (player === 0) {
+                    player = 1;
+                } else {
+                    player = 0;
+                }
+            }
 
             let validateChoice = (cell) => {
                 console.log('This is round.validateChoice');
@@ -251,27 +285,46 @@ let engine = (() => {
                 }
             };
 
-            let updateCell = (cell) => {
-                console.log('This is round.updateCell');
-            };
-
             let checkForWin = () => {
                 console.log('This is round.checkForWin');
+                let tiles = board.getTiles();
+                // console.log(compareThreeAsEqual(getArrayItems(tiles, 0, 1, 2)));
+                if (compareThreeAsEqual(...getArrayItems(tiles, 0, 1, 2))) {
+                    return tiles[0];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 3, 4, 5))) {
+                    return tiles[3];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 6, 7, 8))) {
+                    return tiles[6];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 0, 3, 6))) {
+                    return tiles[0];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 1, 4, 7))) {
+                    return tiles[1];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 2, 5, 8))) {
+                    return tiles[2];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 0, 4, 8))) {
+                    return tiles[0];
+                } else if (compareThreeAsEqual(...getArrayItems(tiles, 2, 4, 6))) {
+                    return tiles[2];
+                } else if (!tiles.includes(null)) {
+                    return 'DRAW';
+                } else {
+                    return false;
+                }
             };
 
             let processChoice = (cellNum) => {
                 console.log('This is round.processChoice with choice: ' + cellNum);
                 tileAccess[0] = false;
                 if (validateChoice(cellNum)) {
-                    updateCell(cellNum);
-                    let won = checkForWin()
-                    if (won) {
+                    board.setCell(cellNum, player);
+                    let won = checkForWin();
+                    if (won !== false) {
                         roundOver(won);
                     } else {
-                        // switch players
-                        // enable tiles
+                        switchPlayer();
+                        tileAccess[0] = true;
                     }
-                }
+                } else {tileAccess[0] = true}
             };
 
             return {
