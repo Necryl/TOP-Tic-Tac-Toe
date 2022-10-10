@@ -189,24 +189,64 @@ let engine = (() => {
     // game module
     let game = (() => {
 
-        let tileAvailable = false;
+        let tileAccess = [false];
 
-        let round = (() => {
+        let roundCounter = [0, 0];
+
+        let roundOver = (won=false) => {
+            roundCounter[0]++;
+            // declare winner or draw
+            if (roundCounter[0] < roundCounter[1]) {
+                // update round number and then
+                round.start();
+            } else {
+                end();
+            }
+        }
+        
+        let board = (() => {
+            let tiles;
+
+            let symbols = ['X', 'O'];
+
+            let reset = () => {
+                tiles = [null, null, null, null, null, null, null, null, null];
+                tileElements.forEach(tile => {
+                    tile.textContent = '';
+                });
+            }
+            reset();
+
+            let setCell = (cell, player) => {
+                tileElements[cell-1].textContent = symbols[player];
+                tiles[cell-1] = player;
+            }
+
+            let getCell = (cell) => {
+                return tiles[cell-1];
+            }
+
+            return {
+                reset,
+                setCell,
+                getCell,
+            };
+        })()
+
+        let round = ((tileAccess, roundOver, board) => {
             let start = () => {
                 console.log('This is round.start');
-
-                tileElements.forEach(tile => {
-                    tile.textContent = 'O';
-                });
-
-                tileAvailable = true;
+                
+                board.reset();
+                
+                tileAccess[0] = true;
             };
 
-            let validateChoice = () => {
+            let validateChoice = (cell) => {
                 console.log('This is round.validateChoice');
             };
 
-            let updateCell = () => {
+            let updateCell = (cell) => {
                 console.log('This is round.updateCell');
             };
 
@@ -214,19 +254,30 @@ let engine = (() => {
                 console.log('This is round.checkForWin');
             };
 
-            let processChoice = () => {
-                console.log('This is round.processChoice');
+            let processChoice = (cellNum) => {
+                console.log('This is round.processChoice with choice: ' + cellNum);
+                tileAccess[0] = false;
+                if (validateChoice(cellNum)) {
+                    updateCell(cellNum);
+                    let won = checkForWin()
+                    if (won) {
+                        roundOver(won);
+                    } else {
+                        // switch players
+                        // enable tiles
+                    }
+                }
             };
 
-            let end = () => {
-                console.log('This is round.end');
-            };
-
-            return {start, processChoice}
-        })()
+            return {
+                start,
+                processChoice,
+            }
+        })(tileAccess, roundOver, board);
 
         let start = () => {
             console.log('This is game.start');
+            roundCounter[1] = Number(numOfRoundsInputElement.value);
             round.start();
         };
 
@@ -234,7 +285,14 @@ let engine = (() => {
             console.log('This is game.end');
         };
         
-        return {round, start,};
+        return {
+            round,
+            board,
+            start,
+            get tileAvailable() {return tileAccess[0]},
+            set tileAvailable(data) {tileAccess[0] = data},
+            roundCounter,
+        };
     })()
 
     // engine functions
@@ -255,7 +313,9 @@ let engine = (() => {
 
         tileElements.forEach(tile => {
             tile.addEventListener('click', event => {
-                console.log(`Tile ${event.target.getAttribute('data-index')} was clicked`);
+                if (game.tileAvailable) {
+                    game.round.processChoice(event.target.getAttribute('data-index'));
+                }
             });
         })
     }
