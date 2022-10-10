@@ -244,6 +244,11 @@ let engine = (() => {
 
             let validateChoice = (cell) => {
                 console.log('This is round.validateChoice');
+                if (board.getCell(cell) === null) {
+                    return true;
+                } else {
+                    return false;
+                }
             };
 
             let updateCell = (cell) => {
