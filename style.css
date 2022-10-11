@@ -441,7 +441,10 @@ body {
 .board {
     /* border: 0.1rem solid black; */
 
-    margin-top: 5vh;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+    margin: auto;
 
     display: grid;
     place-content: center;
@@ -455,6 +458,44 @@ body {
     --tileSize: 5rem;
 }
 
+.strikeContainer {
+    /* outline: 0.1rem solid rgb(146, 1, 1); */
+
+    pointer-events: none;
+    
+    position: absolute;
+    width: 100%;
+    display: grid;
+    --strikeHeight: 0.25rem;
+}
+.strike {
+    background-color: black;
+    height: var(--strikeHeight);
+    width: 0%;
+}
+
+.strikeThrough {
+    transition: 1500ms;
+    width: 100%;
+}
+
+.strikeContainer[data-index='1'] {
+    transform: translate(0px, calc((var(--tileSize)/2) - (var(--strikeHeight)/2)));
+} .strikeContainer[data-index='2'] {
+    transform: translate(0px, calc((var(--tileSize)/2) - (var(--strikeHeight)/2) + var(--tileSize)));
+} .strikeContainer[data-index='3'] {
+    transform: translate(0px, calc((var(--tileSize)/2) - (var(--strikeHeight)/2) + (var(--tileSize)*2)));
+} .strikeContainer[data-index='4'] {
+    transform: rotate(90deg) translate(calc(var(--tileSize)*1.5), calc(var(--tileSize)));
+} .strikeContainer[data-index='5'] {
+    transform: rotate(90deg) translate(calc(var(--tileSize)*1.5), 0px);
+} .strikeContainer[data-index='6'] {
+    transform: rotate(90deg) translate(calc(var(--tileSize)*1.5), calc(var(--tileSize)*-1));
+} .strikeContainer[data-index='7'] {
+    transform: rotate(45deg) translate(calc(var(--tileSize)*1), calc(var(--tileSize)*1)) scaleX(125%);
+} .strikeContainer[data-index='8'] {
+    transform: rotate(-45deg) translate(calc(var(--tileSize)*-1), calc(var(--tileSize)*1)) scaleX(125%);
+}
 
 /* Tiles */
 .tile[data-index='1'] {
@@ -508,5 +549,3 @@ body {
     align-content: start;
     gap: 1rem;
 }
-
-/* .playAgainBtn {} */

@@ -25,6 +25,15 @@ const tileElements = (() => {
 
     return result;
 })()
+const strikeElements = (() => {
+    let result = [];
+
+    document.querySelectorAll('.strike').forEach((strike) => {
+        result[strike.getAttribute('data-index')-1] = strike;
+    });
+
+    return result;
+})()
 
 
 // variables
@@ -235,21 +244,33 @@ let engine = (() => {
                 setHeader("It's a draw!");
                 await delay(2000);
             } else {
-                console.log('winner: ' + result);
-                let winner = players()[result]
-                wins[result]++;
+                console.log('winner: ' + result[0]);
+                let winner = players()[result[0]]
+                wins[result[0]]++;
                 let name = winner.name;
                 if (winner.type === 'AI') {
                     name = 'Bot ' + name;
                 }
                 updateWinStats();
                 setHeader(`${name} wins this round!`);
+                strikeThrough(result[1]);
                 await delay(2000);
             }
             if (roundCounter[0] < roundCounter[1]) {
                 round.start();
             } else {
                 end();
+            }
+        }
+        
+        let strikeThroughRevealed = [];
+        let strikeThrough = (strikeNum, mode='reveal') => {
+            console.log('striking '+strikeNum);
+            if (mode === 'reveal') {
+                strikeThroughRevealed.push(strikeNum);
+                strikeElements[strikeNum-1].classList.add('strikeThrough');
+            } else if (mode === 'remove') {
+                strikeElements[strikeNum-1].classList.remove('strikeThrough');
             }
         }
 
@@ -277,6 +298,9 @@ let engine = (() => {
                 tileElements.forEach(tile => {
                     tile.textContent = '';
                 });
+                for (let i = 0; i < strikeThroughRevealed.length; i++) {
+                    strikeThrough(strikeThroughRevealed.pop(), 'remove');
+                }
             }
             reset();
 
@@ -335,21 +359,21 @@ let engine = (() => {
                 let tiles = board.getTiles();
                 // console.log(compareThreeAsEqual(getArrayItems(tiles, 0, 1, 2)));
                 if (compareThreeAsEqual(...getArrayItems(tiles, 0, 1, 2))) {
-                    return tiles[0];
+                    return [tiles[0], 1];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 3, 4, 5))) {
-                    return tiles[3];
+                    return [tiles[3], 2];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 6, 7, 8))) {
-                    return tiles[6];
+                    return [tiles[6], 3];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 0, 3, 6))) {
-                    return tiles[0];
+                    return [tiles[0], 4];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 1, 4, 7))) {
-                    return tiles[1];
+                    return [tiles[1], 5];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 2, 5, 8))) {
-                    return tiles[2];
+                    return [tiles[2], 6];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 0, 4, 8))) {
-                    return tiles[0];
+                    return [tiles[0], 7];
                 } else if (compareThreeAsEqual(...getArrayItems(tiles, 2, 4, 6))) {
-                    return tiles[2];
+                    return [tiles[2], 8];
                 } else if (!tiles.includes(null)) {
                     return 'DRAW';
                 } else {
