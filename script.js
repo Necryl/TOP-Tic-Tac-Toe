@@ -220,7 +220,7 @@ let engine = (() => {
         let roundCounter;
 
         async function setHeader(data, mode='indefinite') {
-            if (mode === 'reset') {
+            if (data === 'reset') {
                 data = 'Tic-Tac-Toe';
             } else if (mode !== 'indefinite') {
                 if (Number.isInteger(mode)) {
@@ -228,18 +228,17 @@ let engine = (() => {
                     await delay(mode);
                     setHeader('reset');
                 } else {
-                    throw "setHeader() -> invalid parameter: mode | Expected an Integer(milliseconds for delay), 'reset' or 'indefinite'(default value)";
+                    throw "setHeader() -> invalid parameter: mode | Expected an Integer(milliseconds for delay) or 'indefinite'(default value)";
                 }
             }
-            if (mode === 'reset' || mode === 'indefinite') {
+            if (mode === 'indefinite') {
                 headerElement.textContent = data;
             }
         }
 
         let roundOver = (result) => {
-            console.log('round over!');
             roundCounter[0]++;
-            console.log(roundCounter[0], roundCounter[1]);
+            console.log('Round ' + roundCounter[0] + ' out of ' + roundCounter[1]);
             if (result === 'DRAW') {
                 console.log("It's a draw!");
             } else {
@@ -247,7 +246,7 @@ let engine = (() => {
                 let winner = players()[result]
             }
             if (roundCounter[0] < roundCounter[1]) {
-                // update round number and then
+                setHeader(`Round ${roundCounter[0]}/${roundCounter[1]}`);
                 round.start();
             } else {
                 end();
@@ -386,7 +385,6 @@ let engine = (() => {
             start,
             get tileAvailable() {return tileAccess[0]},
             set tileAvailable(data) {tileAccess[0] = data},
-            roundCounter,
         };
     })()
 
