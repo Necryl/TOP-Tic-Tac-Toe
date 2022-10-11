@@ -12,6 +12,7 @@ const picGalleryWrapperElement = document.querySelector('.pic-gallery-wrapper');
 const picGalleryElement = document.querySelector('.pic-gallery');
 let picGalleryImgElements;
 const closeBtnElement = document.querySelector('.closeBtn');
+const headerElement = document.querySelector('.heading');
 // capture tiles
 const tileElements = (() => {
     let result = [];
@@ -61,7 +62,12 @@ resetBtnElement.addEventListener('click', event => {
 })
 
 
-// factory functions
+// ensuring compatibility
+Number.isInteger = Number.isInteger || function(value) {
+    return typeof value === "number" && 
+           isFinite(value) && 
+           Math.floor(value) === value;
+};
 
 
 // tool functions
@@ -123,6 +129,8 @@ function getArrayItems(source) {
     }
     return result;
 }
+
+function delay(ms) {return new Promise(resolve => setTimeout(resolve, ms))}; // this function only works inside an async function with the await keyword
 
 // engine
 let engine = (() => {
@@ -211,11 +219,33 @@ let engine = (() => {
         let tileAccess = [false];
         let roundCounter;
 
+        async function setHeader(data, mode='indefinite') {
+            if (mode === 'reset') {
+                data = 'Tic-Tac-Toe';
+            } else if (mode !== 'indefinite') {
+                if (Number.isInteger(mode)) {
+                    setHeader(data);
+                    await delay(mode);
+                    setHeader('reset');
+                } else {
+                    throw "setHeader() -> invalid parameter: mode | Expected an Integer(milliseconds for delay), 'reset' or 'indefinite'(default value)";
+                }
+            }
+            if (mode === 'reset' || mode === 'indefinite') {
+                headerElement.textContent = data;
+            }
+        }
+
         let roundOver = (result) => {
             console.log('round over!');
             roundCounter[0]++;
             console.log(roundCounter[0], roundCounter[1]);
-            // declare winner or draw
+            if (result === 'DRAW') {
+                console.log("It's a draw!");
+            } else {
+                console.log('winner: ' + result);
+                let winner = players()[result]
+            }
             if (roundCounter[0] < roundCounter[1]) {
                 // update round number and then
                 round.start();
