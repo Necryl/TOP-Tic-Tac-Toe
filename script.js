@@ -220,14 +220,22 @@ let engine = (() => {
         let tileAccess = [false];
         let roundCounter;
 
-        let roundOver = (result) => {
+        async function roundOver(result) {
             roundCounter[0]++;
             console.log('Round ' + roundCounter[0] + ' out of ' + roundCounter[1]);
             if (result === 'DRAW') {
                 console.log("It's a draw!");
+                setHeader("It's a draw!");
+                await delay(2000);
             } else {
                 console.log('winner: ' + result);
                 let winner = players()[result]
+                let name = winner.name;
+                if (winner.type === 'AI') {
+                    name = 'Bot ' + name;
+                }
+                setHeader(`${name} wins this round!`);
+                await delay(2000);
             }
             if (roundCounter[0] < roundCounter[1]) {
                 round.start();
