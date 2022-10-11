@@ -219,6 +219,7 @@ let engine = (() => {
 
         let tileAccess = [false];
         let roundCounter;
+        let wins;
 
         async function roundOver(result) {
             roundCounter[0]++;
@@ -230,6 +231,7 @@ let engine = (() => {
             } else {
                 console.log('winner: ' + result);
                 let winner = players()[result]
+                wins[result]++;
                 let name = winner.name;
                 if (winner.type === 'AI') {
                     name = 'Bot ' + name;
@@ -247,6 +249,7 @@ let engine = (() => {
         let resetGameVars = () => {
             tileAccess[0] = false;
             roundCounter = [0, 0];
+            wins = [0, 0];
             roundCounter[1] = Number(numOfRoundsInputElement.value);
         }
         resetGameVars();
