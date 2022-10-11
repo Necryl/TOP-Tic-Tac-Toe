@@ -39,22 +39,22 @@ let resetBtnToggleStates = ['none', 'initial'];
 // events
 playBtnElement.addEventListener('click', event => {
     engine.play();
-})
+});
 numOfRoundsInputElement.addEventListener('input', event => {
     if (event.target.value == 0) {
         event.target.value = '';
     } else if (String(event.target.value)[0] == 0) {
         event.target.value *= 1;
     }
-})
+});
 numOfRoundsInputElement.addEventListener('focusout', event => {
     if (event.target.value < 1) {
         event.target.value = 1;
     }
-})
+});
 closeBtnElement.addEventListener('click', event => {
     picGalleryWrapperElement.style.display = 'none';
-})
+});
 menuBtnElement.addEventListener('click', event => {
     homeElement.style.display = 'grid';
     arenaElement.style.display = 'none';
@@ -62,7 +62,10 @@ menuBtnElement.addEventListener('click', event => {
 });
 resetBtnElement.addEventListener('click', event => {
     engine.game.round.start();
-})
+});
+playAgainBtnElement.addEventListener('click', event => {
+    engine.playAgain();
+});
 
 
 // ensuring compatibility
@@ -454,6 +457,10 @@ let engine = (() => {
         }
     }
 
+    let playAgain = () => {
+        game.start();
+    }
+
     async function setHeader(data, mode='indefinite') {
         if (data === 'reset') {
             data = 'Tic-Tac-Toe';
@@ -471,7 +478,7 @@ let engine = (() => {
         }
     }
 
-    return {game, initialise, play, setHeader};
+    return {game, initialise, play, setHeader, playAgain};
 })()
 
 // other functions
