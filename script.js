@@ -393,7 +393,7 @@ let engine = (() => {
             let winner;
             let name;
             if (wins[0] === wins[1]) {
-                setHeader('The game is a draw!')
+                setHeader('This game is a draw!')
             } else {
                 winner = wins[0] > wins[1] ? players()[0]:players()[1];
                 name = winner.name
