@@ -6,6 +6,7 @@ const homeElement = document.querySelector('.home');
 const arenaElement = document.querySelector('.arena');
 const statNameElements = document.querySelectorAll('.stats h3');
 const statPicElements = document.querySelectorAll('.stats img');
+const statWinElements = document.querySelectorAll('.stats p');
 const resetBtnElement = document.querySelector('.resetBtn');
 const menuBtnElement = document.querySelector('.menuBtn');
 const picGalleryWrapperElement = document.querySelector('.pic-gallery-wrapper');
@@ -241,6 +242,7 @@ let engine = (() => {
                 if (winner.type === 'AI') {
                     name = 'Bot ' + name;
                 }
+                updateWinStats();
                 setHeader(`${name} wins this round!`);
                 await delay(2000);
             }
@@ -249,6 +251,12 @@ let engine = (() => {
             } else {
                 end();
             }
+        }
+
+        let updateWinStats = () => {
+            statWinElements.forEach((elem, index) => {
+                elem.textContent = `(${wins[index]}/${roundCounter[1]})`
+            });
         }
 
         let resetGameVars = () => {
@@ -374,6 +382,7 @@ let engine = (() => {
         let start = () => {
             console.log('This is game.start');
             resetGameVars();
+            updateWinStats();
             playAgainBtnElement.style.display = 'none';
             resetBtnElement.style.display = resetBtnToggleStates[1];
             round.start();

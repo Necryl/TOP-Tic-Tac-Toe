@@ -380,7 +380,7 @@ body {
 .stats {
     /* border: 0.1rem solid black; */
 
-    pointer-events: none;
+    /* pointer-events: none; */
     position: relative;
 
     display: grid;
@@ -431,6 +431,11 @@ body {
 
 .stats img {
     height: min(17vw, 3rem);
+}
+
+.stats p {
+    margin: 0%;
+    font-size: 0.9rem;
 }
 
 .board {
