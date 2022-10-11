@@ -372,6 +372,18 @@ let engine = (() => {
 
         let end = () => {
             console.log('This is game.end');
+            let winner;
+            let name;
+            if (wins[0] === wins[1]) {
+                setHeader('The game is a draw!')
+            } else {
+                winner = wins[0] > wins[1] ? players()[0]:players()[1];
+                name = winner.name
+                if (winner.type === 'AI') {
+                    name = 'Bot ' + name;
+                }
+                setHeader(`${name} wins the game!`);
+            }
         };
         
         return {
