@@ -56,6 +56,7 @@ closeBtnElement.addEventListener('click', event => {
 menuBtnElement.addEventListener('click', event => {
     homeElement.style.display = 'grid';
     arenaElement.style.display = 'none';
+    engine.setHeader('reset');
 });
 resetBtnElement.addEventListener('click', event => {
     engine.game.round.start();
@@ -219,23 +220,6 @@ let engine = (() => {
         let tileAccess = [false];
         let roundCounter;
 
-        async function setHeader(data, mode='indefinite') {
-            if (data === 'reset') {
-                data = 'Tic-Tac-Toe';
-            } else if (mode !== 'indefinite') {
-                if (Number.isInteger(mode)) {
-                    setHeader(data);
-                    await delay(mode);
-                    setHeader('reset');
-                } else {
-                    throw "setHeader() -> invalid parameter: mode | Expected an Integer(milliseconds for delay) or 'indefinite'(default value)";
-                }
-            }
-            if (mode === 'indefinite') {
-                headerElement.textContent = data;
-            }
-        }
-
         let roundOver = (result) => {
             roundCounter[0]++;
             console.log('Round ' + roundCounter[0] + ' out of ' + roundCounter[1]);
@@ -246,7 +230,6 @@ let engine = (() => {
                 let winner = players()[result]
             }
             if (roundCounter[0] < roundCounter[1]) {
-                setHeader(`Round ${roundCounter[0]}/${roundCounter[1]}`);
                 round.start();
             } else {
                 end();
@@ -294,14 +277,15 @@ let engine = (() => {
             };
         })()
 
-        let round = ((tileAccess, roundOver, board) => {
+        let round = (() => {
             let player;
 
             let start = () => {
                 console.log('This is round.start');
-                board.reset();
                 player = 0;
                 tileAccess[0] = true;
+                board.reset();
+                setHeader(`Round ${roundCounter[0]+1}/${roundCounter[1]}`);
             };
 
             let switchPlayer = () => {
@@ -367,7 +351,7 @@ let engine = (() => {
                 start,
                 processChoice,
             }
-        })(tileAccess, roundOver, board);
+        })();
 
         let start = () => {
             console.log('This is game.start');
@@ -439,7 +423,24 @@ let engine = (() => {
         }
     }
 
-    return {game, initialise, play};
+    async function setHeader(data, mode='indefinite') {
+        if (data === 'reset') {
+            data = 'Tic-Tac-Toe';
+        } else if (mode !== 'indefinite') {
+            if (Number.isInteger(mode)) {
+                setHeader(data);
+                await delay(mode);
+                setHeader('reset');
+            } else {
+                throw "setHeader() -> invalid parameter: mode | Expected an Integer(milliseconds for delay) or 'indefinite'(default value)";
+            }
+        }
+        if (mode === 'indefinite') {
+            headerElement.textContent = data;
+        }
+    }
+
+    return {game, initialise, play, setHeader};
 })()
 
 // other functions
