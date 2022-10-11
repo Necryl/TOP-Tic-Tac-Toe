@@ -422,6 +422,33 @@ body {
     /* background-color: aqua; */
 }
 
+.waitingPic {
+    /* background-color: antiquewhite; */
+
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 1vw;
+}
+
+.stats span {
+    align-self: center;
+    font-size: 0.6rem;
+}
+
+.stats span:before {
+    content: '\023FA\023FA\023FA';
+    animation: waiting 1500ms forwards;
+    animation-iteration-count: inherit;
+}
+
+@keyframes waiting {
+    0% {content: '';}
+    25% {content: '\023FA';}
+    50% {content: '\023FA\023FA';}
+    75% {content: '\023FA\023FA\023FA';}
+    100% {content: '';}
+}
+
 .stats h3 {
     margin: 0%;
 
@@ -466,13 +493,13 @@ body {
     position: absolute;
     width: 100%;
     display: grid;
-    --strikeHeight: 0.25rem;
+    --strikeHeight: 0.5rem;
 }
 .strike {
     background-color: rgb(121, 165, 165);
     height: var(--strikeHeight);
     width: 0%;
-    border-radius: 0.1rem;
+    border-radius: 0.15rem;
 }
 
 .strikeThrough {

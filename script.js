@@ -7,6 +7,7 @@ const arenaElement = document.querySelector('.arena');
 const statNameElements = document.querySelectorAll('.stats h3');
 const statPicElements = document.querySelectorAll('.stats img');
 const statWinElements = document.querySelectorAll('.stats p');
+const statWaitElements = document.querySelectorAll('.stats span');
 const resetBtnElement = document.querySelector('.resetBtn');
 const menuBtnElement = document.querySelector('.menuBtn');
 const picGalleryWrapperElement = document.querySelector('.pic-gallery-wrapper');
@@ -25,6 +26,7 @@ const tileElements = (() => {
 
     return result;
 })()
+// capture strike elements
 const strikeElements = (() => {
     let result = [];
 
@@ -333,16 +335,21 @@ let engine = (() => {
                 player = 0;
                 tileAccess[0] = true;
                 board.reset();
+                animateWaitStat('both', false);
+                animateWaitStat(player);
                 resetBtnElement.style.display = resetBtnToggleStates[1];
                 setHeader(`Round ${roundCounter[0]+1}/${roundCounter[1]}`);
             };
 
             let switchPlayer = () => {
+                animateWaitStat(player, false);
                 if (player === 0) {
                     player = 1;
                 } else {
                     player = 0;
                 }
+                animateWaitStat(player);
+
             }
 
             let validateChoice = (cell) => {
@@ -392,6 +399,7 @@ let engine = (() => {
                         tileAccess[0] = true;
                     } else {
                         resetBtnElement.style.display = resetBtnToggleStates[0];
+                        animateWaitStat('both', false);
                         roundOver(gameOver);
                     }
                 } else {tileAccess[0] = true}
@@ -443,6 +451,8 @@ let engine = (() => {
     let initialise = () => {
         player1 = initiatePlayer(playerFormElements[0]);
         player2 = initiatePlayer(playerFormElements[1]);
+
+        animateWaitStat('both', false);
     
         avatarPics.forEach(fileName => {
             img = createElement('img', {src: `images/${fileName}`, pic: fileName})
@@ -509,6 +519,14 @@ let engine = (() => {
         if (mode === 'indefinite') {
             headerElement.textContent = data;
         }
+    }
+
+    let animateWaitStat = (player, stateToApply=true) => {
+        stateToApply = stateToApply ? 'animation-iteration-count: infinite':'animation-iteration-count: 0';
+        player = player === 'both' ? [0, 1]:[player];
+        player.forEach(elemIndex => {
+            statWaitElements[elemIndex].style = stateToApply;
+        });
     }
 
     return {game, initialise, play, setHeader, playAgain};
