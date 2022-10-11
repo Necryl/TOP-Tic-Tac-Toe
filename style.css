@@ -469,9 +469,10 @@ body {
     --strikeHeight: 0.25rem;
 }
 .strike {
-    background-color: black;
+    background-color: rgb(121, 165, 165);
     height: var(--strikeHeight);
     width: 0%;
+    border-radius: 0.1rem;
 }
 
 .strikeThrough {
