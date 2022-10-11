@@ -13,6 +13,7 @@ const picGalleryElement = document.querySelector('.pic-gallery');
 let picGalleryImgElements;
 const closeBtnElement = document.querySelector('.closeBtn');
 const headerElement = document.querySelector('.heading');
+const playAgainBtnElement = document.querySelector('.playAgainBtn');
 // capture tiles
 const tileElements = (() => {
     let result = [];
@@ -32,6 +33,7 @@ let player1;
 let player2;
 let selectAvatar;
 let numOfPlayers = 0;
+let resetBtnToggleStates = ['none', 'initial'];
 
 
 // events
@@ -296,6 +298,7 @@ let engine = (() => {
                 player = 0;
                 tileAccess[0] = true;
                 board.reset();
+                resetBtnElement.style.display = resetBtnToggleStates[1];
                 setHeader(`Round ${roundCounter[0]+1}/${roundCounter[1]}`);
             };
 
@@ -353,6 +356,7 @@ let engine = (() => {
                         switchPlayer();
                         tileAccess[0] = true;
                     } else {
+                        resetBtnElement.style.display = resetBtnToggleStates[0];
                         roundOver(gameOver);
                     }
                 } else {tileAccess[0] = true}
@@ -367,6 +371,8 @@ let engine = (() => {
         let start = () => {
             console.log('This is game.start');
             resetGameVars();
+            playAgainBtnElement.style.display = 'none';
+            resetBtnElement.style.display = resetBtnToggleStates[1];
             round.start();
         };
 
@@ -384,6 +390,8 @@ let engine = (() => {
                 }
                 setHeader(`${name} wins the game!`);
             }
+            playAgainBtnElement.style.display = 'initial';
+            resetBtnElement.style.display = resetBtnToggleStates[0];
         };
         
         return {

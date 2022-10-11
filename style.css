@@ -380,6 +380,7 @@ body {
 .stats {
     /* border: 0.1rem solid black; */
 
+    pointer-events: none;
     position: relative;
 
     display: grid;
@@ -390,7 +391,6 @@ body {
 .stats-container {
     /* background-color: antiquewhite; */
 
-    pointer-events: none;
 
     position: absolute;
     width: 95vw;
@@ -503,3 +503,5 @@ body {
     align-content: start;
     gap: 1rem;
 }
+
+/* .playAgainBtn {} */
