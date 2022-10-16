@@ -436,16 +436,16 @@ body {
 }
 
 .stats span:before {
-    content: '\023FA\023FA\023FA';
+    content: '\026AB\026AB\026AB';
     animation: waiting 1500ms forwards;
     animation-iteration-count: inherit;
 }
 
 @keyframes waiting {
     0% {content: '';}
-    25% {content: '\023FA';}
-    50% {content: '\023FA\023FA';}
-    75% {content: '\023FA\023FA\023FA';}
+    25% {content: '\026AB';}
+    50% {content: '\026AB\026AB';}
+    75% {content: '\026AB\026AB\026AB';}
     100% {content: '';}
 }
 
