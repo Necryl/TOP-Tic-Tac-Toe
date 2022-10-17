@@ -433,10 +433,15 @@ body {
 .stats span {
     align-self: center;
     font-size: 0.6rem;
+    letter-spacing: 0.1rem;
 }
 
 .stats span:before {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
     content: '\026AB\026AB\026AB';
+    background-color: black;
     animation: waiting 1500ms forwards;
     animation-iteration-count: inherit;
 }
