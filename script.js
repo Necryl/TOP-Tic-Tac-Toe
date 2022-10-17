@@ -46,6 +46,7 @@ let player2;
 let selectAvatar;
 let numOfPlayers = 0;
 let resetBtnToggleStates = ['none', 'initial'];
+let gameStatus=false;
 
 
 // events
@@ -68,9 +69,7 @@ closeBtnElement.addEventListener('click', event => {
     picGalleryWrapperElement.style.display = 'none';
 });
 menuBtnElement.addEventListener('click', event => {
-    homeElement.style.display = 'grid';
-    arenaElement.style.display = 'none';
-    engine.setHeader('reset');
+    engine.menuEventFunc();
 });
 resetBtnElement.addEventListener('click', event => {
     engine.game.round.start();
@@ -333,15 +332,24 @@ let engine = (() => {
         let round = (() => {
             let player;
 
+            async function prepareForPlayerInput () {
+                if (players()[player].type === 'AI' && gameStatus) {
+                    await delay(1500);
+                    processChoice(AI.play('normal', player));
+                } else {
+                    tileAccess[0] = true;
+                }
+            }
+
             let start = () => {
                 console.log('This is round.start');
                 player = 0;
-                tileAccess[0] = true;
                 board.reset();
                 animateWaitStat('both', false);
                 animateWaitStat(player);
                 resetBtnElement.style.display = resetBtnToggleStates[1];
                 setHeader(`Round ${roundCounter[0]+1}/${roundCounter[1]}`);
+                prepareForPlayerInput();
             };
 
             let switchPlayer = () => {
@@ -358,8 +366,10 @@ let engine = (() => {
             let validateChoice = (cell) => {
                 console.log('This is round.validateChoice');
                 if (board.getCell(cell) === null) {
+                    console.log('Choice Validated');
                     return true;
                 } else {
+                    console.log('Choice not valid');
                     return false;
                 }
             };
@@ -407,7 +417,7 @@ let engine = (() => {
                 return result;
             };
 
-            let processChoice = (cellNum) => {
+            async function processChoice (cellNum) {
                 console.log('This is round.processChoice with choice: ' + cellNum);
                 tileAccess[0] = false;
                 if (validateChoice(cellNum)) {
@@ -415,7 +425,7 @@ let engine = (() => {
                     let result = checkForWin();
                     if (result === false) {
                         switchPlayer();
-                        tileAccess[0] = true;
+                        prepareForPlayerInput();
                     } else {
                         resetBtnElement.style.display = resetBtnToggleStates[0];
                         animateWaitStat('both', false);
@@ -466,6 +476,126 @@ let engine = (() => {
         };
     })()
 
+    //AI module
+    let AI = (() => {
+
+        let tiles = (() => {
+            let newTiles = [];
+            let type;
+
+            for (let i = 0; i < 9; i++) {
+                if ([1,3,7,9].includes(i)) {
+                    type = 'corner';
+                } else if ([2,4,6,8].includes(i)) {
+                    type = 'side';
+                } else {
+                    type = 'center';
+                }
+                newTiles.push({
+                    occupied:undefined,
+                    strikable:undefined,
+                    type,
+                })
+            };
+            return newTiles;
+        })();
+
+        let emptyCells = [];
+
+        let strikableCells = [];
+
+        let checkForStrikable = (cellNum) => {
+            let patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+            let result = []
+            patterns.forEach((pattern, pIndex) => {
+                if (pattern.includes(cellNum)) {
+                    let cells = getArrayItems(game.board.getTiles(), ...pattern);
+                    for (let i = 0; i < 2; i++) {
+                        cells[pattern.indexOf(cellNum)] = i;
+                        if (compareThreeAsEqual(...cells)) {
+                            result = [cellNum, i, pIndex];
+                        }
+                    }
+                }
+            });
+            return result; // the format is: [cellNum, player, pattern]
+        }
+
+        let updateTiles = () => {
+            console.log('This is updateTiles inside AI module');
+            let empty = [];
+            let strikeCells = [];
+            let strike;
+            let occupy;
+            for (let i = 0; i < 9; i++) {
+                occupy = game.board.getCell(i+1);
+                strike = checkForStrikable(i);
+                if (occupy === null) {
+                    empty.push(i);
+                    tiles[i].occupied = false;
+                } else {
+                    tiles[i].occupied = occupy;
+                }
+                if (strike.length === 0 || occupy !== null) {
+                    tiles[i].strikable = false;
+                } else {
+                    strikeCells.push(strike);
+                    tiles[i].strikable = strike;
+                }
+            }
+            emptyCells = empty.slice(0);
+            strikableCells = strikeCells.slice(0);
+        }
+        
+        let stupid = () => {}
+
+        let normal = () => {}
+
+        let impossible = () => {}
+
+        let play = (mode, player) => {
+            console.log('This is AI.play()');
+            updateTiles();
+            let result = null;
+            // if (mode === 'stupid') {
+            //     return stupid();
+            // } else if (mode === 'normal') {
+            //     return normal();
+            // } else if (mode ==='impossible') {
+            //     return impossible();
+            // } else {
+            //     throw "AI.play() -> invalid value in mode parameter. Expected 'stupid', 'normal' or 'impossible'";
+            // }
+
+            if (strikableCells.length !== 0) {
+                console.log('checking for win patterns');
+                strikableCells.forEach(item => {
+                    console.log(`${item[1]} -> ${player}`)
+                    if (item[1] === player) {
+                        console.log('Got a win');
+                        result = item[0]+1;
+                    }
+                });
+                if (result === null) {
+                    result = strikableCells[0][0]+1;
+                }
+            } else {
+                result = emptyCells[Math.floor(Math.random()*emptyCells.length)]+1;
+            }
+            return result;
+        };
+
+
+        return {
+            play,
+            updateTiles,
+            checkForStrikable,
+            tiles,
+            emptyCells,
+            strikableCells,
+        }
+    })()
+
     // engine functions
     let initialise = () => {
         player1 = initiatePlayer(playerFormElements[0]);
@@ -499,6 +629,7 @@ let engine = (() => {
         player1 = createPlayer(player1);
         player2 = createPlayer(player2);
         problems = null;
+        gameStatus = true;
 
         players().forEach(player => {
             if (player.name === '') {
@@ -521,6 +652,13 @@ let engine = (() => {
 
     let playAgain = () => {
         game.start();
+    }
+
+    let menuEventFunc = () => {
+        homeElement.style.display = 'grid';
+        arenaElement.style.display = 'none';
+        gameStatus = false;
+        setHeader('reset');
     }
 
     async function setHeader(data, mode='indefinite') {
@@ -548,7 +686,7 @@ let engine = (() => {
         });
     }
 
-    return {game, initialise, play, setHeader, playAgain};
+    return {game, initialise, play, setHeader, playAgain, menuEventFunc, AI};
 })()
 
 // other functions
