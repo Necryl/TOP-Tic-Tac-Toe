@@ -255,7 +255,9 @@ let engine = (() => {
                 }
                 updateWinStats();
                 setHeader(`${name} wins this round!`);
-                strikeThrough(result[1]);
+                for (let i = 1; i < result.length; i++) {
+                    strikeThrough(result[i]);
+                }
                 await delay(2000);
             }
             if (roundCounter[0] < roundCounter[1]) {
@@ -267,7 +269,7 @@ let engine = (() => {
         
         let strikeThroughRevealed = [];
         let strikeThrough = (strikeNum, mode='reveal') => {
-            console.log('striking '+strikeNum);
+            // console.log('striking '+strikeNum);
             if (mode === 'reveal') {
                 strikeThroughRevealed.push(strikeNum);
                 strikeElements[strikeNum-1].classList.add('strikeThrough');
@@ -300,7 +302,8 @@ let engine = (() => {
                 tileElements.forEach(tile => {
                     tile.textContent = '';
                 });
-                for (let i = 0; i < strikeThroughRevealed.length; i++) {
+                let strikeThroughRevealedLength = strikeThroughRevealed.length;
+                for (let i = 0; i < strikeThroughRevealedLength; i++) {
                     strikeThrough(strikeThroughRevealed.pop(), 'remove');
                 }
             }
@@ -365,27 +368,43 @@ let engine = (() => {
                 console.log('This is round.checkForWin');
                 let tiles = board.getTiles();
                 // console.log(compareThreeAsEqual(getArrayItems(tiles, 0, 1, 2)));
+                let result = []
+                let register = (winner, pattern) => {
+                    result[0] = winner;
+                    result.push(pattern);
+                };
                 if (compareThreeAsEqual(...getArrayItems(tiles, 0, 1, 2))) {
-                    return [tiles[0], 1];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 3, 4, 5))) {
-                    return [tiles[3], 2];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 6, 7, 8))) {
-                    return [tiles[6], 3];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 0, 3, 6))) {
-                    return [tiles[0], 4];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 1, 4, 7))) {
-                    return [tiles[1], 5];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 2, 5, 8))) {
-                    return [tiles[2], 6];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 0, 4, 8))) {
-                    return [tiles[0], 7];
-                } else if (compareThreeAsEqual(...getArrayItems(tiles, 2, 4, 6))) {
-                    return [tiles[2], 8];
-                } else if (!tiles.includes(null)) {
-                    return 'DRAW';
-                } else {
-                    return false;
+                    register(tiles[0], 1);
                 }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 3, 4, 5))) {
+                    register(tiles[3], 2);
+                }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 6, 7, 8))) {
+                    register(tiles[6], 3);
+                }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 0, 3, 6))) {
+                    register(tiles[0], 4);
+                }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 1, 4, 7))) {
+                    register(tiles[1], 5);
+                }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 2, 5, 8))) {
+                    register(tiles[2], 6);
+                }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 0, 4, 8))) {
+                    register(tiles[0], 7);
+                }
+                if (compareThreeAsEqual(...getArrayItems(tiles, 2, 4, 6))) {
+                    register(tiles[2], 8);
+                }
+                if (result.length === 0) {
+                    if (!tiles.includes(null)) {
+                        result = 'DRAW';
+                    } else {
+                        result = false;
+                    }
+                }
+                return result;
             };
 
             let processChoice = (cellNum) => {
@@ -393,14 +412,14 @@ let engine = (() => {
                 tileAccess[0] = false;
                 if (validateChoice(cellNum)) {
                     board.setCell(cellNum, player);
-                    let gameOver = checkForWin();
-                    if (gameOver === false) {
+                    let result = checkForWin();
+                    if (result === false) {
                         switchPlayer();
                         tileAccess[0] = true;
                     } else {
                         resetBtnElement.style.display = resetBtnToggleStates[0];
                         animateWaitStat('both', false);
-                        roundOver(gameOver);
+                        roundOver(result);
                     }
                 } else {tileAccess[0] = true}
             };
