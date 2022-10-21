@@ -139,7 +139,7 @@ function compareThreeAsEqual(item1, item2, item3) {
     }
 }
 
-function getArrayItems(source) {
+function getArrayItems(source) { // returns items from source in a new array based on specified indexes
     let result = [];
     for (let i = 1; i < arguments.length; i++) {
         result.push(source[arguments[i]]);
@@ -521,7 +521,7 @@ let engine = (() => {
             return result; // the format is: [cellNum, player, pattern]
         }
 
-        let updateTiles = () => {
+        let updateTiles = () => { // updates emptyCells and strikableCells
             console.log('This is updateTiles inside AI module');
             let empty = [];
             let strikeCells = [];
@@ -549,40 +549,40 @@ let engine = (() => {
         
         let stupid = () => {}
 
-        let normal = () => {}
+        let normal = (player) => {
+            let result = null;
+            if (strikableCells.length !== 0) {
+                console.log('checking for win patterns');
+                strikableCells.forEach(item => {
+                    console.log(`${item[1]} -> ${player}`)
+                    if (item[1] === player) { // if winnable, strike to win
+                        console.log('Got a win');
+                        result = item[0]+1;
+                    }
+                });
+                if (result === null) { // if not winnable but strike is available, block first strike in array
+                    result = strikableCells[0][0]+1;
+                }
+            } else { // returns random empty cell
+                result = emptyCells[Math.floor(Math.random()*emptyCells.length)]+1;
+            }
+            return result;
+        }
 
         let impossible = () => {}
 
         let play = (mode, player) => {
             console.log('This is AI.play()');
             updateTiles();
-            let result = null;
-            // if (mode === 'stupid') {
-            //     return stupid();
-            // } else if (mode === 'normal') {
-            //     return normal();
-            // } else if (mode ==='impossible') {
-            //     return impossible();
-            // } else {
-            //     throw "AI.play() -> invalid value in mode parameter. Expected 'stupid', 'normal' or 'impossible'";
-            // }
-
-            if (strikableCells.length !== 0) {
-                console.log('checking for win patterns');
-                strikableCells.forEach(item => {
-                    console.log(`${item[1]} -> ${player}`)
-                    if (item[1] === player) {
-                        console.log('Got a win');
-                        result = item[0]+1;
-                    }
-                });
-                if (result === null) {
-                    result = strikableCells[0][0]+1;
-                }
+            if (mode === 'stupid') {
+                return stupid(player);
+            } else if (mode === 'normal') {
+                return normal(player);
+            } else if (mode ==='impossible') {
+                return impossible(player);
             } else {
-                result = emptyCells[Math.floor(Math.random()*emptyCells.length)]+1;
+                throw "AI.play() -> invalid value in mode parameter. Expected 'stupid', 'normal' or 'impossible'";
             }
-            return result;
         };
 
 
