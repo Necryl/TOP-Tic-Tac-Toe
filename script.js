@@ -128,15 +128,16 @@ function createElement(tag, attributes={}, text=undefined) {
     return result;
 }
 
-function compareThreeAsEqual(item1, item2, item3) {
-    if (item1 === item2 && item2 === item3) {
-        if (item1 === null) {
-            return false;
+function compareAsEqual(item1, item2, item3) {
+    let result = true;
+    [...arguments].reduce((item, nextItem) => {
+        if (item !== nextItem || item === null) {
+            result = false;
         }
-        return true;
-    } else {
-        return false;
-    }
+        item = nextItem;
+        return item;
+    });
+    return result;
 }
 
 function getArrayItems(source) { // returns items from source in a new array based on specified indexes
@@ -145,6 +146,12 @@ function getArrayItems(source) { // returns items from source in a new array bas
         result.push(source[arguments[i]]);
     }
     return result;
+}
+
+function randomNum(max=undefined, min=0) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function delay(ms) {return new Promise(resolve => setTimeout(resolve, ms))}; // this function only works inside an async function with the await keyword
@@ -333,9 +340,10 @@ let engine = (() => {
             let player;
 
             async function prepareForPlayerInput () {
-                if (players()[player].type === 'AI' && gameStatus) {
+                playerObj = players()[player]
+                if (playerObj.type === 'AI' && gameStatus) {
                     await delay(1500);
-                    processChoice(AI.play('normal', player));
+                    processChoice(AI.play(playerObj.difficulty, player));
                 } else {
                     tileAccess[0] = true;
                 }
@@ -364,7 +372,7 @@ let engine = (() => {
             }
 
             let validateChoice = (cell) => {
-                console.log('This is round.validateChoice');
+                // console.log('This is round.validateChoice');
                 if (board.getCell(cell) === null) {
                     console.log('Choice Validated');
                     return true;
@@ -375,36 +383,35 @@ let engine = (() => {
             };
 
             let checkForWin = () => {
-                console.log('This is round.checkForWin');
+                // console.log('This is round.checkForWin');
                 let tiles = board.getTiles();
-                // console.log(compareThreeAsEqual(getArrayItems(tiles, 0, 1, 2)));
                 let result = []
                 let register = (winner, pattern) => {
                     result[0] = winner;
                     result.push(pattern);
                 };
-                if (compareThreeAsEqual(...getArrayItems(tiles, 0, 1, 2))) {
+                if (compareAsEqual(...getArrayItems(tiles, 0, 1, 2))) {
                     register(tiles[0], 1);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 3, 4, 5))) {
+                if (compareAsEqual(...getArrayItems(tiles, 3, 4, 5))) {
                     register(tiles[3], 2);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 6, 7, 8))) {
+                if (compareAsEqual(...getArrayItems(tiles, 6, 7, 8))) {
                     register(tiles[6], 3);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 0, 3, 6))) {
+                if (compareAsEqual(...getArrayItems(tiles, 0, 3, 6))) {
                     register(tiles[0], 4);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 1, 4, 7))) {
+                if (compareAsEqual(...getArrayItems(tiles, 1, 4, 7))) {
                     register(tiles[1], 5);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 2, 5, 8))) {
+                if (compareAsEqual(...getArrayItems(tiles, 2, 5, 8))) {
                     register(tiles[2], 6);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 0, 4, 8))) {
+                if (compareAsEqual(...getArrayItems(tiles, 0, 4, 8))) {
                     register(tiles[0], 7);
                 }
-                if (compareThreeAsEqual(...getArrayItems(tiles, 2, 4, 6))) {
+                if (compareAsEqual(...getArrayItems(tiles, 2, 4, 6))) {
                     register(tiles[2], 8);
                 }
                 if (result.length === 0) {
@@ -484,92 +491,258 @@ let engine = (() => {
             let type;
 
             for (let i = 0; i < 9; i++) {
-                if ([1,3,7,9].includes(i)) {
+                if ([1,3,7,9].includes(i+1)) {
                     type = 'corner';
-                } else if ([2,4,6,8].includes(i)) {
+                } else if ([2,4,6,8].includes(i+1)) {
                     type = 'side';
                 } else {
                     type = 'center';
                 }
                 newTiles.push({
                     occupied:undefined,
-                    strikable:undefined,
                     type,
                 })
             };
             return newTiles;
         })();
 
+        
         let emptyCells = [];
-
-        let strikableCells = [];
-
-        let checkForStrikable = (cellNum) => {
-            let patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-            let result = []
-            patterns.forEach((pattern, pIndex) => {
-                if (pattern.includes(cellNum)) {
-                    let cells = getArrayItems(game.board.getTiles(), ...pattern);
-                    for (let i = 0; i < 2; i++) {
-                        cells[pattern.indexOf(cellNum)] = i;
-                        if (compareThreeAsEqual(...cells)) {
-                            result = [cellNum, i, pIndex];
-                        }
-                    }
-                }
-            });
-            return result; // the format is: [cellNum, player, pattern]
-        }
+        let singleStrikable = false;
+        let doubleStrikable = false;
 
         let updateTiles = () => { // updates emptyCells and strikableCells
             console.log('This is updateTiles inside AI module');
             let empty = [];
-            let strikeCells = [];
-            let strike;
+            singleStrikable = detectStrikes('list').reduce((final, current) => {
+                if (current.length !== 0) {
+                    final = true;
+                }
+                return final;
+            }, false);
+            doubleStrikable = detectFutureStrikes(2).reduce((final, current) => {
+                if (current.length !== 0) {
+                    final = true;
+                }
+                return final;
+            }, false);
+            console.log(doubleStrikable);
             let occupy;
             for (let i = 0; i < 9; i++) {
                 occupy = game.board.getCell(i+1);
-                strike = checkForStrikable(i);
                 if (occupy === null) {
                     empty.push(i);
                     tiles[i].occupied = false;
                 } else {
                     tiles[i].occupied = occupy;
                 }
-                if (strike.length === 0 || occupy !== null) {
-                    tiles[i].strikable = false;
-                } else {
-                    strikeCells.push(strike);
-                    tiles[i].strikable = strike;
-                }
             }
             emptyCells = empty.slice(0);
-            strikableCells = strikeCells.slice(0);
         }
-        
-        let stupid = () => {}
+
+        let customBoard = (...arguments) => { // boardTiles='default', player1=[], player2=[]
+            let boardTiles = arguments[0].slice(0);
+            if (boardTiles==='default') {
+                boardTiles=game.board.getTiles();
+            }
+            let args = [...arguments].slice(1);
+            for (let player = 0; player < args.length; player++) {
+                args[player].forEach(cellNum => {
+                    boardTiles[cellNum] = player;
+                });
+            }
+            return boardTiles;
+        }
+
+        let detectStrikes = (boardTiles=game.board.getTiles(), mode='default', excludePattern=[]) => {
+            if (typeof boardTiles === 'string' || boardTiles instanceof String) {
+                if (boardTiles !== 'default') {
+                    mode = boardTiles;
+                } else if (Number.isInteger(mode)) {
+                    excludePattern = [mode];
+                    mode = boardTiles;
+                } else if (Array.isArray(mode)) {
+                    excludePattern = mode;
+                    mode = boardTiles;
+                }
+                boardTiles = game.board.getTiles();
+            } else if (Number.isInteger(mode)) {
+                excludePattern = [mode];
+                mode = 'default';
+            } else if (Array.isArray(mode)) {
+                excludePattern = mode;
+                mode = 'default';
+            }
+            let patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+            if (excludePattern.length !== 0) {
+                excludePattern.forEach(patternNum => {
+                    patterns[patternNum] = null;
+                })
+                patterns = patterns.reduce((finalResult, currentValue) => {
+                    if (currentValue !== null) {
+                        finalResult.push(currentValue);
+                    }
+                    return finalResult;
+                }, [])
+            }
+            let result = [Array(9).fill(null), Array(9).fill(null)]; // each array for each player
+            for (let cellNum = 0; cellNum < 9; cellNum++) {
+                patterns.forEach((pattern, patternIndex) => {
+                    if (pattern.includes(cellNum)) {
+                        let potentialSrikeCells = getArrayItems(boardTiles, ...pattern);
+                        if (potentialSrikeCells[pattern.indexOf(cellNum)] === null) {
+                            for (let player = 0; player < 2; player++) {
+                                potentialSrikeCells[pattern.indexOf(cellNum)] = player;
+                                if (compareAsEqual(...potentialSrikeCells)) {
+                                    result[player][cellNum] = [cellNum, patternIndex];
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            if (mode === 'list') {
+                result.forEach((player, index) => {
+                    result[index] = player.reduce((finalResult, currentValue) => {
+                        if (currentValue !== null) {
+                            finalResult.push(currentValue);
+                        }
+                        return finalResult;
+                    }, []);
+                });
+            }
+            return result; // the format for result is: [PlayerOneStrikes, PlayerTwoStrikes] | format for each strike is: [cellNum, patternNum]
+        }
+
+        let detectFutureStrikes = (strikeNum='all', boardTiles=game.board.getTiles()) => {
+            let result = [[], []];
+            if (typeof boardTiles === 'string' || boardTiles instanceof String) {
+                if (boardTiles !== 'default') {
+                    mode = boardTiles;
+                }
+                boardTiles = game.board.getTiles();
+            }
+            let alreadyAvailableStrikePatterns = detectStrikes(boardTiles, 'list').reduce((finalArray, player) => {
+                let newPlayerStrikes = player.reduce((finalPlayer, strike) => {
+                    finalPlayer.push(strike[1]);
+                    return finalPlayer;
+                }, []);
+                finalArray = finalArray.concat(newPlayerStrikes);
+                return finalArray;
+            }, []);
+            boardTiles.forEach((cell, cellNum) => {
+                if (cell === null) {
+                    [0, 1].forEach(player => {
+                        let args = [boardTiles, [], []];
+                        args[player+1] = [cellNum];
+                        let filledInBoard = customBoard(...args);
+                        let strikes = detectStrikes(filledInBoard, 'list', alreadyAvailableStrikePatterns);
+                        if (Number.isInteger(strikeNum) && strikes[player].length === strikeNum || strikeNum === 'all' && strikes[player].length > 0) {
+                           result[player].push(cellNum);
+                        }
+                    })
+                }
+            });
+            return result;
+        }
+
+        let strikeDown = (player) => {
+            console.log('strikeDown');
+            let prediction = detectStrikes('list');
+            if (prediction[player].length !== 0) {
+                console.log('gonna win');
+                return prediction[player][randomNum(prediction[player].length-1)][0]+1;
+            } else {
+                console.log('gonna block');
+                return prediction[player === 0 ? 1:0][randomNum(prediction[player === 0? 1:0].length-1)][0]+1;
+            }
+        }
+
+        let doubleStrikeDown = (player) => {
+            let prediction = detectFutureStrikes(2);
+            if (prediction[player].length !== 0) {
+                return prediction[player][randomNum(prediction[player].length-1)]+1;
+            } else {
+                return prediction[player === 0 ? 1:0][randomNum(prediction[player === 0? 1:0].length-1)]+1;
+            }
+        }
+
+        let stupid = (player) => {}
 
         let normal = (player) => {
             let result = null;
-            if (strikableCells.length !== 0) {
+            console.log('status is ' + singleStrikable);
+            if (singleStrikable) {
                 console.log('checking for win patterns');
-                strikableCells.forEach(item => {
-                    console.log(`${item[1]} -> ${player}`)
-                    if (item[1] === player) { // if winnable, strike to win
-                        console.log('Got a win');
-                        result = item[0]+1;
-                    }
-                });
-                if (result === null) { // if not winnable but strike is available, block first strike in array
-                    result = strikableCells[0][0]+1;
-                }
+                result = strikeDown(player);
             } else { // returns random empty cell
                 result = emptyCells[Math.floor(Math.random()*emptyCells.length)]+1;
             }
             return result;
         }
 
-        let impossible = () => {}
+        let impossible = (player) => {
+            let result = null;
+            console.log('Impossible AI on the job!');
+            if (strikableStatus) {
+                console.log('Impossible: Found a strike!');
+                result = strikeDown(player);
+            } else {
+                if (emptyCells.length === 9) { // if all cells are empty
+                    console.log('Impossible: Board is empty, making the first move');
+                    result = getCellOfType('corner', 'random');
+                } else {
+                    let occupier;
+                    game.board.getTiles().forEach((cell, index) => { // identify occupied enemy cell
+                        if (cell !== null && cell !== player) {
+                            occupier = [cell, index];
+                        }
+                    });
+                    ['corner', 'side', 'center'].forEach(item => { // identify cell type
+                        if (getCellOfType(item).includes(occupier[1])) {
+                            occupier.push(item);
+                        }
+                    })
+                    if (emptyCells.length === 8) {
+                        console.log('Impossible: Got the second move');
+                        if (occupier[2] === 'corner') {
+                            result = 5; //center cell
+                        }
+                    } else if (emptyCells.length === 7) {
+                        console.log('Impossible: On the third move');
+                        if (occupier[2] === 'side') {
+                            result = 5; // center cell
+                        } else if (occupier[2] === 'corner') {
+                            getCellOfType('corner').forEach(cell => {
+                                if (emptyCells.includes(cell)) {
+                                    result = cell+1; // any corner cell that is empty
+                                }
+                            });
+                        } else { // center
+                            let neutralCells = getCellOfFutureStrikes(0, player);
+                            result = neutralCells[randomNum(neutralCells.length-1)]+1;
+                        }
+                    } else {
+                        let doubleStrikable = getCellOfFutureStrikes(2, player);
+                        if (doubleStrikable.length !== 0) {
+                            console.log('Impossible: Doublestrike!!!');
+                            result = doubleStrikable[randomNum(doubleStrikable.length-1)]+1;
+                        } else {
+                            let singleStrikable = getCellOfFutureStrikes(1, player);
+                            if (singleStrikable.length !== 0) {
+                                console.log('Impossible: rolling out a single strike');
+                                result = singleStrikable[randomNum(singleStrikable.length-1)]+1;
+                            }
+                        }
+                    }
+                }
+            }
+            if (result === null || result.length === 0) {
+                result = emptyCells[randomNum(emptyCells.length-1)]+1;
+                console.log('Impossible: random empty cell');
+            }
+            return result;
+        }
 
         let play = (mode, player) => {
             console.log('This is AI.play()');
@@ -589,10 +762,12 @@ let engine = (() => {
         return {
             play,
             updateTiles,
-            checkForStrikable,
+            detectStrikes,
+            detectFutureStrikes,
+            customBoard,
+            strikeDown,
             tiles,
             emptyCells,
-            strikableCells,
         }
     })()
 
