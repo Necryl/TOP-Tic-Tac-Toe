@@ -646,9 +646,9 @@ let engine = (() => {
             return result;
         }
 
-        let strikeDown = (player) => {
+        let strikeDown = (player, boardTiles=game.board.getTiles()) => {
             console.log('strikeDown');
-            let prediction = detectStrikes('list');
+            let prediction = detectStrikes(boardTiles, 'list');
             if (prediction[player].length !== 0) {
                 console.log('gonna win');
                 return prediction[player][randomNum(prediction[player].length-1)][0]+1;
@@ -658,13 +658,50 @@ let engine = (() => {
             }
         }
 
-        let doubleStrikeDown = (player) => {
-            let prediction = detectFutureStrikes(2);
+        let doubleStrikeDown = (player, boardTiles=game.board.getTiles()) => {
+            let prediction = detectFutureStrikes(2, boardTiles);
             if (prediction[player].length !== 0) {
                 return prediction[player][randomNum(prediction[player].length-1)]+1;
             } else {
-                return prediction[player === 0 ? 1:0][randomNum(prediction[player === 0? 1:0].length-1)]+1;
+                let blockableCells = blockDoubleStrikes(player, boardTiles);
+                return blockableCells[randomNum(blockableCells.length-1)]+1;
             }
+        }
+
+        let blockDoubleStrikes = (player, boardTiles=game.board.getTiles()) => {
+            // expects at least one doublestrike to be available
+            let getEnemyDoubleStrikes = (paramBoard) => {return detectFutureStrikes(2, paramBoard)[player === 0 ? 1:0]};
+            let enemyDoubleStrikes = getEnemyDoubleStrikes(boardTiles);
+            let enemyPlayer = player === 0 ? 1:0;
+            let result = [];
+            if (enemyDoubleStrikes.length > 1) {
+                boardTiles.forEach((cell, cellNum) => {
+                    if (cell === null) {
+                        let = args = [boardTiles, [], []];
+                        args[player+1] = [cellNum];
+                        let tempBoard = customBoard(...args);
+                        let verdict = getEnemyDoubleStrikes(tempBoard);
+                        if (verdict.length === 0) {
+                            result.push(cellNum);
+                        } else {
+                            args = [tempBoard, [], []];
+                            let strike = strikeDown(enemyPlayer, tempBoard)-1;
+                            args[enemyPlayer+1] = [strike];
+                            tempBoard = customBoard(...args);
+                            verdict = getEnemyDoubleStrikes(tempBoard);
+                            if (verdict.length === 0) {
+                                verdict = detectStrikes(tempBoard, 'list');
+                                if (verdict[enemyPlayer].length < 2) {
+                                    result.push(cellNum);
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                result.push(enemyDoubleStrikes[0]);
+            }
+            return result;
         }
 
         let stupid = (player) => {}
@@ -766,6 +803,8 @@ let engine = (() => {
             detectFutureStrikes,
             customBoard,
             strikeDown,
+            doubleStrikeDown,
+            blockDoubleStrikes,
             tiles,
             emptyCells,
         }
