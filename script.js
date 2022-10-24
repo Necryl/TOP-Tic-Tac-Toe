@@ -72,7 +72,7 @@ menuBtnElement.addEventListener('click', event => {
     engine.menuEventFunc();
 });
 resetBtnElement.addEventListener('click', event => {
-    engine.game.round.start();
+    engine.resetRound();
 });
 playAgainBtnElement.addEventListener('click', event => {
     engine.playAgain();
@@ -138,6 +138,33 @@ function compareAsEqual(item1, item2, item3) {
         return item;
     });
     return result;
+}
+
+function compareBasicArrays() {
+    let items = [...arguments].reduce((final, current) => {
+        final.push('['+current.join(', ')+']');
+        return final;
+    }, [])
+    return compareAsEqual(...items);
+}
+
+function checkIfArrayInsideArray(target, array1, array2) {
+    let result = [];
+    for (let i = 1; i < arguments.length; i++) {
+        let tempResult = false;
+        target.forEach(item => {
+            if (compareBasicArrays(item, arguments[i])) {
+                tempResult = true;
+            }
+        });
+        result.push(tempResult);
+    }
+    return result.reduce((final, current) => {
+        if (!current) {
+            final = false;
+        }
+        return final;
+    }, true);
 }
 
 function getArrayItems(source) { // returns items from source in a new array based on specified indexes
@@ -236,6 +263,21 @@ let engine = (() => {
         
         return {elements: player.elements, type, avatar, name, difficulty};
     }
+
+    // for testing
+    let applyToBoard = (boardTiles) => {
+        boardTiles.forEach((cell, cellNum) => {
+            let item = cell;
+            if (!Number.isInteger(item)) {
+                if (item === null) {
+                    item = '';
+                } else {
+                    item = '?';
+                }
+            }
+            game.board.setCell(cellNum+1, item);
+        });
+    }
     
     // game module
     let game = (() => {
@@ -316,7 +358,12 @@ let engine = (() => {
             reset();
 
             let setCell = (cell, player) => {
-                tileElements[cell-1].textContent = symbols[player];
+                // console.log('This is board.setCell()');
+                if (Number.isInteger(player) && player < symbols.length) {
+                    tileElements[cell-1].textContent = symbols[player];
+                } else {
+                    tileElements[cell-1].textContent = player;
+                }
                 tiles[cell-1] = player;
             }
 
@@ -526,7 +573,6 @@ let engine = (() => {
                 }
                 return final;
             }, false);
-            console.log(doubleStrikable);
             let occupy;
             for (let i = 0; i < 9; i++) {
                 occupy = game.board.getCell(i+1);
@@ -684,15 +730,18 @@ let engine = (() => {
                         if (verdict.length === 0) {
                             result.push(cellNum);
                         } else {
-                            args = [tempBoard, [], []];
-                            let strike = strikeDown(enemyPlayer, tempBoard)-1;
-                            args[enemyPlayer+1] = [strike];
-                            tempBoard = customBoard(...args);
-                            verdict = getEnemyDoubleStrikes(tempBoard);
-                            if (verdict.length === 0) {
-                                verdict = detectStrikes(tempBoard, 'list');
-                                if (verdict[enemyPlayer].length < 2) {
-                                    result.push(cellNum);
+                            let strikeAvailable = detectStrikes(tempBoard, 'list')[player].length === 0 ? false:true;
+                            if (strikeAvailable) {
+                                args = [tempBoard, [], []];
+                                let strike = strikeDown(enemyPlayer, tempBoard)-1;
+                                args[enemyPlayer+1] = [strike];
+                                tempBoard = customBoard(...args);
+                                verdict = getEnemyDoubleStrikes(tempBoard);
+                                if (verdict.length === 0) {
+                                    verdict = detectStrikes(tempBoard, 'list');
+                                    if (verdict[enemyPlayer].length < 2) {
+                                        result.push(cellNum);
+                                    }
                                 }
                             }
                         }
@@ -704,13 +753,159 @@ let engine = (() => {
             return result;
         }
 
+        let oracle = (() => {
+            // [1, 1, 0, 0, 0, 0, 0, 1, 1]
+            // [0, 0, 1, 1, 0, 1, 1, 0, 0]
+            let patterns = { // 2 stands for any/?/undefined/*
+                definite:   [[0, 0, 0, 2, 2, 2, 2, 2, 2],
+                             [2, 2, 2, 0, 0, 0, 2, 2, 2],
+                             [2, 2, 0, 2, 0, 2, 0, 2, 2]],
+                indefinite: [[0, 0, 1, 1, 1, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 1, 1, 0, 1],
+                             [0, 1, 0, 1, 1, 0, 0, 0, 1]],
+            }
+            
+            let rotateBoard = (boardTiles=game.board.getTiles(), steps=1, unique=false) => {
+                if (Number.isInteger(boardTiles)) {
+                    steps = boardTiles;
+                }
+                if (!Array.isArray(boardTiles)) {
+                    boardTiles = game.board.getTiles();
+                }
+                let x = boardTiles;
+                let result = []
+                let rotate = () => {
+                    x = [x[6], x[3], x[0], x[7], x[4], x[1], x[8], x[5], x[2]];
+                    return x;
+                }
+                for (i = 0; i < steps; i++) {
+                    result.push(rotate());
+                }
+
+                if (unique) {
+                    let tempResult = [];
+                    result.forEach((item, index) => {
+                        if (!checkIfArrayInsideArray(tempResult, item)) {
+                            tempResult.push(item);
+                        }
+                    });
+                    result = tempResult;
+                }
+
+                if (steps === 0) {
+                    result = [boardTiles];
+                }
+                if (result.length === 1) {
+                    return result[0];
+                } else {
+                    return result;
+                }
+            }
+
+            let getPattern = (type, player=0, rotations=false, unique=true) => {
+                let result = [];
+                let rSteps = rotations ? 4:0;
+                if (type !== 'draw') {
+                    occupier = type === 'win' ? player : player === 0 ? 1:0;
+                    patterns.definite.forEach((pattern) => {
+                        rotateBoard(pattern.reduce((final, current) => {
+                            if (current === 0) {
+                                final.push(occupier);
+                            } else {
+                                final.push('?');
+                            }
+                            return final;
+                        }, []), rSteps, unique).forEach(item => {result.push(item)});
+                    });
+                } else {
+                    patterns.indefinite.forEach((pattern) => {
+                        rotateBoard(pattern, rSteps, unique).forEach(item => {result.push(item)});
+                        rotateBoard(pattern.reduce((final, current) => {
+                            final.push(current === 0 ? 1:0);
+                            return final;
+                        }, []), rSteps, unique).forEach(item => {result.push(item)});
+                    })
+                }
+                return result;
+            }
+
+            let getVerdict = (boardTiles=game.board.getTiles()) => {
+                let definitePatterns = getPattern('win', 0, true);
+                let result = ['verdict', 'winner (if)'];
+                definitePatterns.forEach(pattern => {
+                    if (result[0] !== 'win') {
+                        let patternSlots = [];
+                        pattern.forEach((item, index) => {
+                            if (item === 0) {
+                                patternSlots.push(boardTiles[index]);
+                            }
+                        });
+                        if (compareAsEqual(...patternSlots)) {
+                            result = ['win', patternSlots[0]];
+                        }
+                    }
+                });
+                if (result[0] === 'verdict') {
+                    if (boardTiles.includes(null)) {
+                        result = ['indefinite'];
+                    } else {
+                        result = ['DRAW'];
+                    }
+                }
+                return result;
+            }
+
+            let followStrikeChain = (boardTiles=game.board.getTiles(), activePlayer) => {
+                if (Number.isInteger(boardTiles)) {
+                    activePlayer = boardTiles;
+                }
+                if (!Array.isArray(boardTiles)) {
+                    boardTiles = game.board.getTiles();
+                }
+                let tempBoard = boardTiles;
+                let player = activePlayer;
+                let strike = strikeDown(player, tempBoard)-1;
+                let args = [tempBoard, [], []];
+                args[player+1] = [strike];
+                tempBoard = customBoard(...args);
+                let verdict = getVerdict(tempBoard);
+                if (verdict[0] !== 'indefinite') {
+                    return verdict;
+                } else {
+                    let strikesAvailable = detectStrikes(tempBoard, 'list').reduce((final, current) => {
+                        if (current.length > 0) {
+                            final = true;
+                        }
+                        return final;
+                    }, false);
+                    if (!strikesAvailable) {
+                        verdict.push(tempBoard);
+                        let empty = [];
+                        tempBoard.forEach((cell, index) => {
+                            if (cell === null) {
+                                empty.push(index);
+                            }
+                        });
+                        if (empty.length === 1) {
+                            verdict = ['DRAW'];
+                        }
+                        return verdict;
+                    } else {
+                        return followStrikeChain(tempBoard, player === 0 ? 1:0);
+                    }
+                }
+            }
+
+
+            return {rotateBoard, getPattern, getVerdict, followStrikeChain};
+        })()
+
         let stupid = (player) => {}
 
         let normal = (player) => {
+            console.log('Normal bot on the job!');
             let result = null;
-            console.log('status is ' + singleStrikable);
             if (singleStrikable) {
-                console.log('checking for win patterns');
                 result = strikeDown(player);
             } else { // returns random empty cell
                 result = emptyCells[Math.floor(Math.random()*emptyCells.length)]+1;
@@ -719,64 +914,17 @@ let engine = (() => {
         }
 
         let impossible = (player) => {
+            console.log('Impossible bot on the job!');
             let result = null;
-            console.log('Impossible AI on the job!');
-            if (strikableStatus) {
-                console.log('Impossible: Found a strike!');
+            if (singleStrikable) {
+                console.log('Found a strike');
                 result = strikeDown(player);
+            } else if (doubleStrikable) {
+                console.log('Found a double strike');
+                result = doubleStrikeDown(player);
             } else {
-                if (emptyCells.length === 9) { // if all cells are empty
-                    console.log('Impossible: Board is empty, making the first move');
-                    result = getCellOfType('corner', 'random');
-                } else {
-                    let occupier;
-                    game.board.getTiles().forEach((cell, index) => { // identify occupied enemy cell
-                        if (cell !== null && cell !== player) {
-                            occupier = [cell, index];
-                        }
-                    });
-                    ['corner', 'side', 'center'].forEach(item => { // identify cell type
-                        if (getCellOfType(item).includes(occupier[1])) {
-                            occupier.push(item);
-                        }
-                    })
-                    if (emptyCells.length === 8) {
-                        console.log('Impossible: Got the second move');
-                        if (occupier[2] === 'corner') {
-                            result = 5; //center cell
-                        }
-                    } else if (emptyCells.length === 7) {
-                        console.log('Impossible: On the third move');
-                        if (occupier[2] === 'side') {
-                            result = 5; // center cell
-                        } else if (occupier[2] === 'corner') {
-                            getCellOfType('corner').forEach(cell => {
-                                if (emptyCells.includes(cell)) {
-                                    result = cell+1; // any corner cell that is empty
-                                }
-                            });
-                        } else { // center
-                            let neutralCells = getCellOfFutureStrikes(0, player);
-                            result = neutralCells[randomNum(neutralCells.length-1)]+1;
-                        }
-                    } else {
-                        let doubleStrikable = getCellOfFutureStrikes(2, player);
-                        if (doubleStrikable.length !== 0) {
-                            console.log('Impossible: Doublestrike!!!');
-                            result = doubleStrikable[randomNum(doubleStrikable.length-1)]+1;
-                        } else {
-                            let singleStrikable = getCellOfFutureStrikes(1, player);
-                            if (singleStrikable.length !== 0) {
-                                console.log('Impossible: rolling out a single strike');
-                                result = singleStrikable[randomNum(singleStrikable.length-1)]+1;
-                            }
-                        }
-                    }
-                }
-            }
-            if (result === null || result.length === 0) {
+                console.log('choosing a random empty cell');
                 result = emptyCells[randomNum(emptyCells.length-1)]+1;
-                console.log('Impossible: random empty cell');
             }
             return result;
         }
@@ -805,6 +953,8 @@ let engine = (() => {
             strikeDown,
             doubleStrikeDown,
             blockDoubleStrikes,
+            applyToBoard,
+            oracle,
             tiles,
             emptyCells,
         }
@@ -875,6 +1025,10 @@ let engine = (() => {
         setHeader('reset');
     }
 
+    let resetRound = () => {
+        game.round.start();
+    }
+
     async function setHeader(data, mode='indefinite') {
         if (data === 'reset') {
             data = 'Tic-Tac-Toe';
@@ -900,7 +1054,7 @@ let engine = (() => {
         });
     }
 
-    return {game, initialise, play, setHeader, playAgain, menuEventFunc, AI};
+    return {game, initialise, play, setHeader, playAgain, applyToBoard, resetRound, menuEventFunc, AI};
 })()
 
 // other functions
