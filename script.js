@@ -693,13 +693,13 @@ let engine = (() => {
         }
 
         let strikeDown = (player, boardTiles=game.board.getTiles()) => {
-            console.log('strikeDown');
+            // console.log('strikeDown');
             let prediction = detectStrikes(boardTiles, 'list');
             if (prediction[player].length !== 0) {
-                console.log('gonna win');
+                // console.log('gonna win');
                 return prediction[player][randomNum(prediction[player].length-1)][0]+1;
             } else {
-                console.log('gonna block');
+                // console.log('gonna block');
                 return prediction[player === 0 ? 1:0][randomNum(prediction[player === 0? 1:0].length-1)][0]+1;
             }
         }
@@ -795,11 +795,42 @@ let engine = (() => {
                 if (steps === 0) {
                     result = [boardTiles];
                 }
-                if (result.length === 1) {
-                    return result[0];
-                } else {
-                    return result;
+                return result;
+            }
+
+            let mirrorBoard = (boardTiles=game.board.getTiles()) => {
+                let compare = (item1, item2) => {
+                    if (String(item1) === String(null) || String(item2) === String(null) || String(item1) === String(item2)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
+                let vertical = [[boardTiles[0], boardTiles[2]], [boardTiles[3], boardTiles[5]], [boardTiles[6], boardTiles[8]]];
+                let horizontal = [[boardTiles[0], boardTiles[6]], [boardTiles[1], boardTiles[7]], [boardTiles[2], boardTiles[8]]];
+                let diagonalLB2RT = [[boardTiles[3], boardTiles[7]], [boardTiles[0], boardTiles[8]], [boardTiles[1], boardTiles[5]]];
+                let diagonalRB2LT = [[boardTiles[7], boardTiles[5]], [boardTiles[6], boardTiles[2]], [boardTiles[3], boardTiles[1]]];
+                let axisList = [vertical, horizontal, diagonalLB2RT, diagonalRB2LT]; // vertical, horizontal, diagonal (left-bottom to right-top), diagonal (right-bottom to left-top)
+
+                let mirrorVertical = [boardTiles[2], boardTiles[1], boardTiles[0], boardTiles[5], boardTiles[4], boardTiles[3], boardTiles[8], boardTiles[7], boardTiles[6]];
+                let mirrorHorizontal = [boardTiles[6], boardTiles[7], boardTiles[8], boardTiles[3], boardTiles[4], boardTiles[5], boardTiles[0], boardTiles[1], boardTiles[2]];
+                let mirrorDiagonalLB2RT = [boardTiles[8], boardTiles[5], boardTiles[2], boardTiles[7], boardTiles[4], boardTiles[1], boardTiles[6], boardTiles[3], boardTiles[0]];
+                let mirrorDiagonalRB2LT = [boardTiles[0], boardTiles[3], boardTiles[6], boardTiles[1], boardTiles[4], boardTiles[7], boardTiles[2], boardTiles[5], boardTiles[8]];
+                let mirrorList = [mirrorVertical, mirrorHorizontal, mirrorDiagonalLB2RT, mirrorDiagonalRB2LT]; // vertical, horizontal, diagonal (left-bottom to right-top), diagonal (right-bottom to left-top)
+
+                
+                axisList.forEach((axisItem, axisIndex) => {
+                    let result = true;
+                    axisItem.forEach((cellPair) => {
+                        if (!compare(cellPair[0], cellPair[1])) {
+                            result = false;
+                        }
+                    });
+                    axisList[axisIndex] = result;
+                })
+
+                return [[axisList[0], mirrorList[0]], [axisList[1], mirrorList[1]], [axisList[2], mirrorList[2]], [axisList[3], mirrorList[3]]];
+
             }
 
             let getPattern = (type, player=0, rotations=false, unique=true) => {
@@ -888,6 +919,8 @@ let engine = (() => {
                         });
                         if (empty.length === 1) {
                             verdict = ['DRAW'];
+                        } else {
+                            verdict.push(activePlayer === 0 ? 1:0);
                         }
                         return verdict;
                     } else {
@@ -896,8 +929,113 @@ let engine = (() => {
                 }
             }
 
+            let getChoices = (boardTiles, player) => {
+                if (Number.isInteger(boardTiles)) {
+                    player = boardTiles;
+                }
+                if (!Array.isArray(boardTiles)) {
+                    boardTiles = game.board.getTiles();
+                }
 
-            return {rotateBoard, getPattern, getVerdict, followStrikeChain};
+                let empty = [];
+                boardTiles.forEach((cell, cellIndex) => {
+                    if (cell === null) {
+                        empty.push(cellIndex);
+                    }
+                });
+                let emptyFilled = [];
+                empty.forEach((item) => {
+                    let args = [boardTiles, [], []];
+                    args[player+1] = [item];
+                    emptyFilled.push(customBoard(...args));
+                });
+                let result = empty;
+                emptyFilled.forEach((emptyFillBoard, boardIndex) => {
+                    let rotations = rotateBoard(emptyFillBoard, 4, true);
+                    let mirrors = mirrorBoard(emptyFillBoard).reduce((final, current) => {
+                        if (current[0]) {
+                            final.push(current[1]);
+                        }
+                        return final;
+                    }, []);
+                    emptyFilled.forEach((compareBoard, compareIndex) => {
+                        if (compareIndex !== boardIndex && compareBoard !== undefined) {
+                            if (checkIfArrayInsideArray([...rotations, ...mirrors], compareBoard)) {
+                                emptyFilled[compareIndex] = undefined;
+                                result[compareIndex] = undefined;
+                            }
+                        }
+                    });
+                });
+                return result.reduce((final, current) => {
+                    if (current !== undefined) {
+                        final.push(current);
+                    }
+                    return final;
+                }, []);
+            }
+
+            let prophecy = (cell, activePlayer, player, boardTiles=game.board.getTiles()) => {
+                let result = [0, 0, 0]; // [wins, loses, draws]
+
+                let getChoiceVerdicts = (activePlayer, player, boardTiles) => {
+                    let subChoices = oracle.getChoices(boardTiles, activePlayer);
+                    let subResults = []
+                    subChoices.forEach(choice => {
+                        subResults.push(prophecy(choice, activePlayer, player, boardTiles));
+                    });
+                    let subFinal = [0, 0, 0];
+                    subResults.forEach(item => {
+                        subFinal = [subFinal[0]+item[0], subFinal[1]+item[1], subFinal[2]+item[2]];
+                    });
+                    return subFinal;
+                }
+
+                let otherPlayer = activePlayer === 0 ? 1:0;
+                let args = [boardTiles, [], []];
+                args[activePlayer+1] = [cell];
+                let tempBoard = customBoard(...args);
+                let strikeAvailable = detectStrikes(tempBoard, 'list').reduce((final, current) => {
+                    if (current.length > 0) {
+                        final = true;
+                    }
+                    return final;
+                }, false);
+                let doubleStrikeAvailable = detectFutureStrikes(2, tempBoard).reduce((final, current) => {
+                    if (current.length > 0) {
+                        final = true;
+                    }
+                    return final;
+                }, false);
+                let verdict;
+                if (strikeAvailable) {
+                    verdict = oracle.followStrikeChain(tempBoard, otherPlayer);
+                    if (verdict[0] !== 'indefinite') {
+                        if (verdict[0] === 'DRAW') {
+                            result[2]++;
+                        } else {
+                            if (verdict[1] === player) {
+                                result[0]++;
+                            } else {
+                                result[1]++;
+                            }
+                        }
+                    } else {
+                        result = getChoiceVerdicts(verdict[2], player, verdict[1]);
+                    }
+                } else if (doubleStrikeAvailable) {
+                    if (activePlayer === player) {
+                        result[0]++;
+                    } else {
+                        result = getChoiceVerdicts(otherPlayer, player, tempBoard)
+                    }
+                } else {
+                    result = getChoiceVerdicts(otherPlayer, player, tempBoard)
+                }
+                return result;
+            }
+
+            return {prophecy, getChoices, rotateBoard, getPattern, getVerdict, followStrikeChain, mirrorBoard};
         })()
 
         let stupid = (player) => {}
@@ -913,7 +1051,7 @@ let engine = (() => {
             return result;
         }
 
-        let impossible = (player) => {
+        let impossible = (player, boardTiles=game.board.getTiles()) => {
             console.log('Impossible bot on the job!');
             let result = null;
             if (singleStrikable) {
@@ -923,6 +1061,34 @@ let engine = (() => {
                 console.log('Found a double strike');
                 result = doubleStrikeDown(player);
             } else {
+                let possibleChoices = oracle.getChoices(player);
+                //
+                possibleChoices.forEach((choice) => {
+                    let args = [boardTiles, [], []];
+                    args[player+1] = [choice];
+                    let choiceFillBoard = customBoard(...args);
+                    let strikeAvailable = detectStrikes(choiceFillBoard, 'list').reduce((final, current) => {
+                        if (current.length > 0) {
+                            final = true;
+                        }
+                        return final;
+                    }, false);
+                    let verdict;
+                    if (strikeAvailable.length > 0) {
+                        verdict = oracle.followStrikeChain(choiceFillBoard, enemyPlayer);
+                    } else {
+                        let doubleStrikeAvailable = detectFutureStrikes(2, choiceFillBoard).reduce((final, current) => {
+                            if (current.length > 0) {
+                                final = true;
+                            }
+                            return final;
+                        }, false);
+                        if (doubleStrikeAvailable) {
+
+                        }
+                    }
+                    let subChoices = oracle.getChoices(choiceFillBoard, enemyPlayer);
+                });
                 console.log('choosing a random empty cell');
                 result = emptyCells[randomNum(emptyCells.length-1)]+1;
             }
