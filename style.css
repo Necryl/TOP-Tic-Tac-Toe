@@ -292,6 +292,9 @@ body {
 
 .created-by {
     grid-area: C;
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 1vw;
 }
 
 .created-by>* {

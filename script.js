@@ -364,6 +364,9 @@ let engine = (() => {
                 } else {
                     tileElements[cell-1].textContent = player;
                 }
+                if (player === '') {
+                    player = null;
+                }
                 tiles[cell-1] = player;
             }
 
@@ -405,6 +408,9 @@ let engine = (() => {
                 resetBtnElement.style.display = resetBtnToggleStates[1];
                 setHeader(`Round ${roundCounter[0]+1}/${roundCounter[1]}`);
                 prepareForPlayerInput();
+
+                // for testing
+                history = [];
             };
 
             let switchPlayer = () => {
@@ -476,6 +482,10 @@ let engine = (() => {
                 tileAccess[0] = false;
                 if (validateChoice(cellNum)) {
                     board.setCell(cellNum, player);
+                    
+                    // for testing
+                    historyEntry();
+                    
                     let result = checkForWin();
                     if (result === false) {
                         switchPlayer();
@@ -895,6 +905,7 @@ let engine = (() => {
                 }
                 let tempBoard = boardTiles;
                 let player = activePlayer;
+                console.log('striking with player '+player);
                 let strike = strikeDown(player, tempBoard)-1;
                 let args = [tempBoard, [], []];
                 args[player+1] = [strike];
@@ -976,18 +987,39 @@ let engine = (() => {
             }
 
             let prophecy = (cell, activePlayer, player, boardTiles=game.board.getTiles()) => {
-                let result = [0, 0, 0]; // [wins, loses, draws]
+                console.groupCollapsed('prophecy() begins for cell', cell, '| activePlayer:', activePlayer, '| player:', player, '| board:', boardTiles);
+                let result = [[0, 0, 0], [0, 0, 0]]; // [[wins, loses, draws], [definite wins, losses and draws]]
 
                 let getChoiceVerdicts = (activePlayer, player, boardTiles) => {
+                    console.log('getChoiceVerdicts() - params: '+activePlayer, player, boardTiles);
                     let subChoices = oracle.getChoices(boardTiles, activePlayer);
+                    console.log('subChoices: ' + subChoices);
                     let subResults = []
                     subChoices.forEach(choice => {
                         subResults.push(prophecy(choice, activePlayer, player, boardTiles));
                     });
-                    let subFinal = [0, 0, 0];
+                    console.log('subResults:', subResults);
+                    let subFinal = [[0, 0, 0], [0, 0, 0]]; // [[wins,losses,draws],[definite wins, losses and draws]]
                     subResults.forEach(item => {
-                        subFinal = [subFinal[0]+item[0], subFinal[1]+item[1], subFinal[2]+item[2]];
+                        subFinal[0][0] = subFinal[0][0] + item[0][0];
+                        subFinal[0][1] = subFinal[0][1] + item[0][1];
+                        subFinal[0][2] = subFinal[0][2] + item[0][2];
+
+                        subFinal[1][0] = subFinal[1][0] + item[1][0];
+                        subFinal[1][1] = subFinal[1][1] + item[1][1];
+                        subFinal[1][2] = subFinal[1][2] + item[1][2];
+                        if (compareBasicArrays([1, 0, 0], item[0])) {
+                            subFinal[1][0]++;
+                        }
+                        if (compareBasicArrays([0, 1, 0], item[0])) {
+                            subFinal[1][1]++;
+                        }
+                        if (compareBasicArrays([0, 0, 1], item[0])) {
+                            subFinal[1][2]++;
+                        }
                     });
+                    console.log('subFinal:', subFinal);
+                    console.log('end of getChoiceVerdicts()');
                     return subFinal;
                 }
 
@@ -995,47 +1027,153 @@ let engine = (() => {
                 let args = [boardTiles, [], []];
                 args[activePlayer+1] = [cell];
                 let tempBoard = customBoard(...args);
+                console.log('customBoard created :', tempBoard);
                 let strikeAvailable = detectStrikes(tempBoard, 'list').reduce((final, current) => {
                     if (current.length > 0) {
                         final = true;
                     }
                     return final;
                 }, false);
-                let doubleStrikeAvailable = detectFutureStrikes(2, tempBoard).reduce((final, current) => {
-                    if (current.length > 0) {
-                        final = true;
+                let doubleStrikeAvailable = detectFutureStrikes(2, tempBoard)[otherPlayer].length !== 0;
+                let numOfEmptyCells = tempBoard.reduce((final, current) => {
+                    if (current === null) {
+                        final++;
                     }
                     return final;
-                }, false);
+                },0);
+                console.log('strikeAvailable: '+strikeAvailable+' | doubleStrikeAvailable: '+doubleStrikeAvailable+' | numOfEmptyCells: '+numOfEmptyCells);
                 let verdict;
                 if (strikeAvailable) {
+                    console.log('found strike');
                     verdict = oracle.followStrikeChain(tempBoard, otherPlayer);
+                    console.log('verdict:',verdict);
                     if (verdict[0] !== 'indefinite') {
+                        console.log('verdict is NOT indefinite');
                         if (verdict[0] === 'DRAW') {
-                            result[2]++;
+                            console.log('verdict is DRAW');
+                            console.log('result:', result);
+                            result[0][2]++;
+                            console.log('result:', result);
                         } else {
+                            console.log('verdict is NOT DRAW (so "win")');
                             if (verdict[1] === player) {
-                                result[0]++;
+                                console.log("player is activePlayer at the end of strikeChain, so it's a win");
+                                result[0][0]++;
                             } else {
-                                result[1]++;
+                                console.log("player is not the activePlayer at the end of strikeChain, so it's a loss");
+                                result[0][1]++;
                             }
                         }
                     } else {
-                        result = getChoiceVerdicts(verdict[2], player, verdict[1]);
+                        console.log('verdict IS indefinite');
+                        doubleStrikeAvailable = detectFutureStrikes(2, verdict[1])[verdict[2]].length !== 0;
+                        console.log('double strike availability at the end:', doubleStrikeAvailable[0], doubleStrikeAvailable[1]);
+                        if (doubleStrikeAvailable) {
+                            console.log("the active player at the end has a double strike");
+                            if (verdict[2] === player) {
+                                console.log("the activePlayer at the end is player so it's an automatic win for player");
+                                console.log("result:", result);
+                                result[0][0]++;
+                                console.log("result:", result);
+                            } else {
+                                console.log('the active player at the end is the enemy player');
+                                console.log('verdict:', verdict);
+                                result = getChoiceVerdicts(verdict[2], player, verdict[1]);
+                                console.log('since an enemy double strike is available, a definite loss is possible');
+                                result[1][1]++;
+                            }
+                        } else {
+                            console.log("no double strikes found");
+                            console.log('verdict:', verdict);
+                            result = getChoiceVerdicts(verdict[2], player, verdict[1]);
+                        }
                     }
                 } else if (doubleStrikeAvailable) {
-                    if (activePlayer === player) {
-                        result[0]++;
+                    console.log('found a double strike');
+                    if (otherPlayer === player) {
+                        console.log("activePlayer is player so it's an automatic win");
+                        console.log('result:', result);
+                        result[0][0]++;
+                        console.log('result:', result);
                     } else {
+                        console.log("activePlayer is not player, and the otherPlayer can't be trusted to use the doubleStrike, but a definite loss is possible");
                         result = getChoiceVerdicts(otherPlayer, player, tempBoard)
+                        result[1][1]++;
+                    }
+                } else if (numOfEmptyCells < 2) {
+                    console.log('empty cells are less than 2 (1 or 0)');
+                    verdict = getVerdict(tempBoard);
+                    console.log('verdict:', verdict);
+                    if (numOfEmptyCells !== 0 && verdict[0] === 'indefinite') {
+                        console.log('there is one empty cell and the verdict is indefinite');
+                        console.log('filling in last empty cell');
+                        let args = [tempBoard, [], []];
+                        args[otherPlayer+1] = [tempBoard.findIndex((cell) => {
+                            return cell === null;
+                        })];
+                        tempBoard = customBoard(...args);
+                        console.log('new board:', tempBoard);
+                        verdict = getVerdict(tempBoard);
+                        console.log('new verdict:', verdict);
+                    }
+                    if (verdict[0] === 'DRAW') {
+                        console.log('verdict is DRAW');
+                        console.log('result:', result);
+                        result[0][2]++;
+                        console.log('result:', result);
+                    } else {
+                        if (verdict[1] === player) {
+                            console.log("verdict is a win");
+                            console.log('result:', result);
+                            result[0][0]++;
+                            console.log('result:', result);
+                        } else {
+                            console.log("verdict is a loss");
+                            console.log('result:', result);
+                            result[0][1]++;
+                            console.log('result:', result);
+                        }
                     }
                 } else {
+                    console.log('no strike or double strike found and there are 2 or more empty cells');
                     result = getChoiceVerdicts(otherPlayer, player, tempBoard)
                 }
+                console.log("returning final result:", result);
+                console.groupEnd();
                 return result;
             }
 
-            return {prophecy, getChoices, rotateBoard, getPattern, getVerdict, followStrikeChain, mirrorBoard};
+            let getPossiblePatterns = (type, player, includeDraw=true, boardTiles=game.board.getTiles()) => {
+                if (type === 'draw') {includeDraw = false}
+                let typePatterns = getPattern(type, player, true);
+                let drawPatterns = getPattern('draw', player, true);
+                let patterns = includeDraw ? [...typePatterns, ...drawPatterns]:[...typePatterns]
+                patterns = patterns.reduce((final, current) => {
+                    let match = true;
+                    current.forEach((cell, cellIndex) => {
+                        if (cell !== '?' && cell !== boardTiles[cellIndex] && boardTiles[cellIndex] !== null) {
+                            match = false;
+                        }
+                    });
+                    if (match) {
+                        final.push(current);
+                    }
+                    return final;
+                }, []);
+                patterns = patterns.reduce((final, current) => {
+                    let newPattern = current;
+                    current.forEach((cell, cellIndex) => {
+                        if (boardTiles[cellIndex] !== null) {
+                            newPattern[cellIndex] = boardTiles[cellIndex];
+                        }
+                    })
+                    final.push(newPattern);
+                    return final;
+                }, []);
+                return patterns;
+            }
+
+            return {getPossiblePatterns, prophecy, getChoices, rotateBoard, getPattern, getVerdict, followStrikeChain, mirrorBoard};
         })()
 
         let stupid = (player) => {}
@@ -1230,3 +1368,33 @@ function error (message) {
 
 // run on start
 engine.initialise();
+
+//for testing
+async function loopPossiblePatterns(ms, player, goal) {
+    let boardTiles = engine.game.board.getTiles();
+    let patterns = engine.AI.oracle.getPossiblePatterns(goal, player, false);
+    console.log("num of possible patterns: ", patterns.length);
+    for (let i = 0; i < patterns.length; i++) {
+        engine.applyToBoard(patterns[i]);
+        await delay(ms);
+        engine.applyToBoard(boardTiles);
+        await delay(ms);
+    }
+}
+let history = [];
+function historyEntry() {
+    history.push(engine.game.board.getTiles());
+};
+async function loopHistory(ms, backwards=true, history=history) {
+    if (backwards) {
+        for (let i = history.length; i > 0; i--) {
+            engine.applyToBoard(history[i-1]);
+            await delay(ms);
+        }
+    } else {
+        for (let i = 0; i < history.length; i++) {
+            engine.applyToBoard(history[i]);
+            await delay(ms);
+        }
+    }
+}
